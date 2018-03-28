@@ -30,3 +30,6 @@ add_executable(firesim
 target_link_libraries(firesim
 	glfw
 )
+
+install (TARGETS firesim 
+	DESTINATION ${CMAKE_INSTALL_PREFIX})
