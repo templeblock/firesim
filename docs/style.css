@@ -1,0 +1,246 @@
+/* Palette URL: http://paletton.com/#uid=20d0u0kfZrW6jKwb0ylkUmNpQhU */
+
+/*Color Codes*/
+:root {
+
+	/*Background Colors*/
+	--gray-bg-light: #333;
+	--gray-bg-dark: #222;
+
+	/*Font Color*/
+	--font-color: #cba;
+
+	/*Primary Colors*/
+	--rgba-primary-0: rgba(223,140,111,1);
+	--rgba-primary-1: rgba(255,218,205,1);
+	--rgba-primary-2: rgba(255,190,167,1);
+	--rgba-primary-3: rgba(182, 93, 63,1);
+	--rgba-primary-4: rgba(143, 57, 27,1);
+
+	/*Complement Colors*/
+	--rgba-complement-0: rgba( 78,155,118,1);
+	--rgba-complement-1: rgba(173,215,195,1);
+	--rgba-complement-2: rgba(120,183,153,1);
+	--rgba-complement-3: rgba( 44,126, 87,1);
+	--rgba-complement-4: rgba( 19, 99, 61,1);
+}
+
+
+/*****************/
+/*    General    */
+/*****************/
+body {
+	background-color: var(--gray-bg-light);
+	margin: 0px;
+	padding: 0px;
+	font-size: 12pt;
+	font-family: Trebuchet;
+}
+
+h1, h2 {
+	margin: 0px;
+	padding: 0px;
+	font-variant: small-caps;
+}
+
+p {
+	margin: 0px;
+	padding: 0px;
+	margin-top: 10px;
+}
+
+.page { 
+	background-color: var(--gray-bg-dark);
+	margin: 0px;
+	padding: 20px;
+	margin-right: 15%; 
+	margin-left: 15%;
+	/*padding-bottom: 0.25in;*/
+}
+
+/*Header*/
+
+.title {
+	background-color: var(--rgba-primary-0);
+	margin: 0px;
+	padding: 25px;
+	padding-bottom: 30px;
+}
+
+.title h1 {
+	color: var(--rgba-primary-1);
+	font-size: 26pt; 
+}
+
+.title h2 {
+	margin: 0px;
+	margin-top: 5px;
+	color: var(--rgba-primary-3);
+	text-transform: none;
+	font-variant: normal;
+	font-weight: lighter;
+	font-style: italic;
+	font-family: Arial;
+	font-size: 16pt;
+}
+
+/****************/
+/*  Navigation  */
+/****************/
+
+.navbar {
+	margin: 0px;
+	padding: 0px;
+	position: sticky;
+	top: 0;
+}
+
+.navbar table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.navbar td {
+	text-align: center;
+	width: 500px;
+	background-color: var(--rgba-primary-4);
+	transition: background-color .5s;
+	-webkit- transition: background-color .5s;
+
+}
+
+.navbar td:hover {
+	background-color: var(--rgba-primary-3);
+}
+
+.navbar a {
+	color: #FFBEA7;
+	padding-top: 8px;
+	padding-bottom: 8px;
+	font-size: 10pt;
+	text-decoration: none;
+	font-style: none;
+	text-transform: uppercase;
+}
+
+.navbar td a {
+	display: block;
+	width: 100%;
+}
+
+/**********/
+/*  Body  */
+/**********/
+
+.content {
+	margin: 0px;
+	padding: 15px;
+	padding-bottom: 1in;
+	color: var(--font-color);
+	opacity: 1;
+	animation: fadein 1s;
+	-webkit- animation: fadein 1s;
+}
+
+.content h1 {
+	color: var(--rgba-primary-1);
+	margin-top: 10px;
+	font-size: 22pt;
+	font-weight: normal;
+}
+
+.content h2 {
+	color: var(--rgba-primary-2);
+	font-variant: normal;
+	font-weight: lighter;
+	font-size: 16pt;
+	margin: 0px;
+	padding-top: 20px;
+}
+
+.content b {
+	color: var(--rgba-complement-2);
+}
+
+.content p {
+	margin: 0px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
+.content a {
+	color: var(--rgba-complement-2);
+}
+
+.content a:visited {
+	color: var(--rgba-complement-2);
+}
+
+.content a:hover {
+	color: var(--rgba-complement-1);
+	font-style: italic;
+}
+
+.content a:active {
+	color: var(--rgba-complement-3);
+	font-style: italic;
+}
+
+.content figcaption {
+	text-align: center;
+	font-style: italic;
+}
+
+.image table  {
+	width: 100%;
+}
+
+.image td {
+	/*transition: width .5s ease-out, opacity .5s ease-out;*/
+	/*-webkit- transition: width .5s ease-out, opacity .5s ease-out;*/
+	width: 15%;
+	padding-top: 5px;
+	padding-bottom: 10px;
+}
+
+.image td:hover {
+	width: 35%;
+	/*max-width: 50%;*/
+}
+
+.image img {
+	width: 100%;
+	height: auto;
+}
+
+.image caption 
+{
+	text-align: left;
+	font-style: italic;
+	font-weight: bold;
+	padding-top: 25px;
+}
+
+.staticimg caption {
+	text-align: left;
+	font-style: italic;
+	font-weight: bold;
+	padding-top: 25px;
+}
+
+.staticimg table {
+	width: 100%;
+}
+
+.staticimg td {
+	/*transition: width .5s ease-out, opacity .5s ease-out;*/
+	/*-webkit- transition: width .5s ease-out, opacity .5s ease-out;*/
+	width: 15%;
+	padding-top: 5px;
+	padding-bottom: 10px;
+}
+
+.staticimg img {
+	width: 100%;
+	height: auto;
+}

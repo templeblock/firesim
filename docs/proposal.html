@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <title>Fire Simulation Project  |  CS 184</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
+</head>
+<body>
+<div class="page"> 
+    <div class="title">
+        <h1>FireSim</h1>
+        <h2>CS184 | Final Project</h2>
+    </div>
+    <div class="navbar">
+        <table>
+            <tr>
+                <td><a href="index.html">Home</a></td>
+                <td><a href="proposal.html">Proposal</a></td>
+                <td><a href="">Milestone</a></td>
+                <td><a href="">Final</a></td>
+            </tr>
+        </table>
+    </div>
+    <div class="content">
+    <h1>Proposal</h1>
+    <h2>Real-Time Fire Simulation</h2>
+    <p>We are planning to create real-time rendered fire in OpenGL. Our project will implement fluid simulation using Eulerian discretization and GPU parallelization. We would like to also introduce simulation elements such as smoke generation, polygon collision, wind, and the ability to control properties like heat, etc.</p>
+    <p><b>Team Members:</b></p>
+    <ul>
+        <li><b>Chris Zhang</b>, SID 21460930</li>
+        <li><b>Grace Li</b>, SID 26674303</li>
+        <li><b>Yuan Zhou</b>, SID 26323141</li>
+    </ul>
+
+    <h2>Problem Description</h2>
+    <p>We would like to explore the field of 3D fluid simulation since it is applicable to many topics in graphics. Our main concern for this project is how to create a fire simulation that both behaves realistically and is computationally efficient enough to run in real time, making it useful for games and other interactive applications. The main challenges will be modeling and constraining physics calculations to avoid unrealistic scenarios, creating sufficient advection detail to look realistic, making sure that the simulation works with long enough time-steps to be practical, as well as creating an efficient rendering method. Learning how to write efficiently GPU parallelizable code will also be a challenge for us.</p>
+
+    <h2>Goals and Deliverables</h2>
+    <p><b>Baseline</b>: Our plan is to create an OpenGL program that can render fire to a fairly realistic extent. In addition to the application itself, we will include short videos and screenshots of a few different simulations.
+
+    <ul>
+        <li><b>Metrics</b>: Our application should run in real-time in at least 10 frames per second for large-scale simulations, and more for smaller-scale simulations. We will compare highest possible frame rate to measure efficiency.</li>
+
+        <li><b>Questions</b>: Our main question will be what influence each part of our implementation has on the simulation. We will also test how efficient we can make the implementation.</li>
+    </ul>
+
+    <p>Stretch Goals: In addition to the basic fire simulation, we would like to implement polygon collision and the influence of external forces such as wind. Some other ideas we are exploring including smoke generation and functionality of the fluid as a light source for other shaders.</p>
+
+    <h2>Schedule</h2>
+    <ul>
+        <li><b>Week 1 (April 2 - 8)</b>
+            <ul><li>OpenGL Application Structure & Voxel Visualization (non-render mode)</li></ul>
+        </li>
+        <li><b>Week 2 (April 9 - 15)</b>
+            <ul><li>Working Basic Fluid Motion Functions (Low Detail Sim)</li></ul>
+        </li>
+        <li><b>Week 3 (April 16 - 22)</b>
+            <ul><li>Interactivity/User Controls, Working Render</li>
+            <li>(Check-In)</li></ul>
+        </li>
+        <li><b>Week 4 (April 23 - 29)</b>
+            <ul><li>Improve Advection Detail, Realism</li></ul>
+        </li>
+        <li><b>Week 5 (April 30 - May 4)</b>
+            <ul><li>Troubleshooting</li></ul>
+        </li>
+    </ul>
+    <h2>Resources</h2>
+    <p><b>Software:</b></p> 
+    <ul>
+        <li>OpenGL, C++, GLFW and GLAD for application</li>
+        <li>CUDA for GPU parallelization</li>
+        <li>GLSL for basic shading on non-fluid components</li>
+    </ul>
+    <p><b>Literature and Documentation</b></p>
+    <ul>
+        <li><a href="https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch30.html">GPU Gems Fluid Simulation Article</a></li>
+        <li><a href="https://graphics.ethz.ch/teaching/former/imagesynthesis_06/miniprojects/p3/">Smoke and Fire Rendering - Student Project (2006)</a></li>
+    </ul>
+    <br>
+
+    </div>
+</div>
+</body>
+</html>
+
+
+
+
