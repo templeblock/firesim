@@ -102,7 +102,7 @@ public:
 		glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 	}
 
-	private:
+private:
 		// utility function for checking shader compilation/linking errors.
 		// ------------------------------------------------------------------------
 		void checkCompileErrors(unsigned int shader, std::string type)

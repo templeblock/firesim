@@ -7,6 +7,7 @@ using namespace std;
 #include <GLFW/glfw3.h>
 
 #include "shader.h"
+#include <glm/mat3x3.hpp>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);

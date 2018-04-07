@@ -9,6 +9,7 @@ add_subdirectory (ext/glfw-3.2.1)
 include_directories(
 	ext/glfw-3.2.1/include/
 	ext/glad/include/
+	ext/glm/
 	)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -25,10 +26,6 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 add_executable(firesim
 	src/main.cpp
 	ext/glad/src/glad.c
-
-	src/shader.h
-	src/shaders/shader.vert
-	src/shaders/shader.frag
 )
 
 target_link_libraries(firesim
