@@ -6,8 +6,11 @@ using namespace std;
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "shader.h"
-#include <glm/mat3x3.hpp>
+#include "camera.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -33,7 +36,7 @@ int main(void) {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // We don't want the old OpenGL 
 
 	GLFWwindow* window; // (In the accompanying source code, this variable is global for simplicity)
-	window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "firesim", NULL, NULL);
+	window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "FireSim", NULL, NULL);
 	if (window == NULL) {
 		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
 		glfwTerminate();
@@ -64,9 +67,9 @@ int main(void) {
 	/***********************************/
 
 	float vertices[] = {
-		-0.5f, -0.5f, 0.0f,
-		0.5f, -0.5f, 0.0f,
-		0.0f,  0.5f, 0.0f
+		-0.5f, -0.5f, -0.5f,
+		0.5f, -0.5f, -0.5f,
+		0.0f,  0.5f, -0.5f
 	};
 
 	unsigned int VBO, VAO;
@@ -99,7 +102,24 @@ int main(void) {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		//Calculate Transform Matrices
+		//Model matrix
+		glm::mat4 o2w;
+		o2w = glm::rotate(o2w, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+		//View matrix
+		glm::mat4 w2c;
+		w2c = glm::translate(w2c, glm::vec3(0.0f, 0.0f, 0.0f));
+
+		//Projection matrix (Camera to screen)
+		glm::mat4 c2s;
+		c2s = glm::perspective(glm::radians(80.0f), (float)SCR_WIDTH/ (float)SCR_HEIGHT, 0.1f, 100.0f);
+
 		defaultShader.use();
+		//Set transform matrices in shader
+		defaultShader.setMat4("model", o2w);
+		defaultShader.setMat4("view", w2c);
+		defaultShader.setMat4("projection", c2s);
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
