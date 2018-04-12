@@ -11,6 +11,10 @@ public:
 	Camera() {}
 	void init();
 
+	/*****************************************/
+	/* Position, Orientation, Movement, etc. */
+	/*****************************************/
+
 	//Cam position and cam target position
 	vec3 camPos, camTarget;
 
@@ -20,13 +24,17 @@ public:
 	//View Matrix
 	mat4 w2c;
 
-	//Spherical orientation from target
-	double phi, theta, r;
-
 	void calculateAxes();
 	mat4 getViewMatrix();
 
 	void move(vec3 moveBy);
+
+	/*****************/
+	/* Viewing Plane */
+	/*****************/
+
+	//camera space to world space func
+	//generate ray func
 
 private:
 
