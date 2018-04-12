@@ -25,6 +25,13 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 #Add executable
 add_executable(firesim
 	src/main.cpp
+
+	src/grid.h
+	src/grid.cpp
+	
+	src/camera.h
+	src/camera.cpp
+
 	ext/glad/src/glad.c
 )
 
