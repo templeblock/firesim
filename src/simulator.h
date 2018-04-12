@@ -14,18 +14,19 @@ public:
 	}
 	void init();
 
+	void bindVertices();
 	void drawContents();
 	void moveCamera(vec3 moveBy);
 
+private:
+	GLuint VBO;
+	GLuint VAO;
+
 	Camera *CAMERA;
 	Shader *shader;
-
+	
 	unsigned int SCR_HEIGHT;
 	unsigned int SCR_WIDTH;
-
-private:
-
-	//who the fuck
 
 };
 

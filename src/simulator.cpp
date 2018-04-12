@@ -20,14 +20,16 @@ void Simulator::init() {
 	c2s = perspective(radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 	shader->setMat4("projection", c2s);
 	glEnable(GL_DEPTH_TEST);
+
+	/*Bind VBO, VAO*/
+	bindVertices();
 }
 
 void Simulator::moveCamera(vec3 moveBy) {
 	CAMERA->move(moveBy);
 }
 
-void Simulator::drawContents() {
-
+void Simulator::bindVertices() {
 	/***********************************/
 	/* VERTEX DATA, ATTRIBUTES; BUFFERS*/
 	/***********************************/
@@ -83,24 +85,25 @@ void Simulator::drawContents() {
 		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 
-	unsigned int VBO, VAO;
-	glGenVertexArrays(1, &VAO);
+	/*Generate VBO and VAO*/
 	glGenBuffers(1, &VBO);
+	glGenVertexArrays(1, &VAO);
 
-	glBindVertexArray(VAO);
-
+	/* Bind VBO and set VBO data */
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
 
+	/* Bind VAO and set VAO configuration */
+	glBindVertexArray(VAO);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindVertexArray(0);
+}
 
-	/**************************/
+void Simulator::drawContents() {
 	/* Set Transform Matrices */
-	/**************************/
 
 	//Calculate Transform Matrices
 	//Model matrix (CALCULATED PER OBJECT)
@@ -122,7 +125,8 @@ void Simulator::drawContents() {
 	shader->setMat4("model", o2w);
 	shader->setMat4("view", w2c);
 
-	glBindVertexArray(VAO);
+	/* DRAW */
+	glBindVertexArray(VAO); //If switching objects, rebind different VAO
 	//glDrawArrays(GL_TRIANGLES, 0, 3);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glDrawArrays(GL_LINES, 0, 36); //Parameters: Primitive to draw, range of vertex array to draw
 }
