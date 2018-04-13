@@ -20,7 +20,7 @@ void Grid::init() {
 	};
 	vertices = newVertices;
 
-	velocities = std::vector<vec2>(grid_size * grid_size, vec2(0.0));
+	velocities = std::vector<vec3>(grid_size * grid_size, vec3(0.0));
 	pressures = std::vector<float>(grid_size * grid_size, 0.0);
 
 }
@@ -52,4 +52,28 @@ std::vector<vec3> Grid::getCentroids() {
 		}
 	}
 	return cent;
+}
+
+std::vector<vec3> Grid::getScalarEndpoints() {
+	//filler here at least until we figure out the centroid structure to modify
+	int gridSize = 3;
+	std::vector<vec3> cent;
+	double inc = 2.0 / (double)gridSize;
+	for (int i = 0; i < gridSize; i++) {
+		for (int j = 0; j < gridSize; j++) {
+			cent.push_back(vec3((i + 0.5) * inc - 1.0, (j + 0.5) * inc - 1.0, 0.0));
+		}
+	}
+
+	//actual code
+
+	std::vector<vec3> end;
+	for (int i = 0; i < cent.size(); i++) {
+		end.push_back(
+			vec3(
+			cent[i].x + normalize(velocities[i]).x * 0.5 * inc,
+			cent[i].y + normalize(velocities[i]).y * 0.5 * inc,
+			cent[i].z + normalize(velocities[i]).z * 0.5 * inc));
+	}
+	return end;
 }

@@ -17,9 +17,10 @@ public:
 	int getVertexArraySize();
 	std::vector<vec3> getVertices();
 	std::vector<vec3> getCentroids();
+	std::vector<vec3> getScalarEndpoints();
 
 	int grid_size;
-	std::vector<vec2> velocities;
+	std::vector<vec3> velocities;
 	std::vector<float> pressures;
 	float *vertices;
 
