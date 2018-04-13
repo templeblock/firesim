@@ -1,6 +1,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
+#include <vector>;
 
 #include "simulator.h"
 #include "camera.h"
@@ -26,14 +27,14 @@ void Simulator::init() {
 	glEnable(GL_DEPTH_TEST);
 
 	/*Bind VBO, VAO*/
-	bindVertices(grid->vertices, grid->getVertexArraySize());
+	bindVertices();
 }
 
 void Simulator::moveCamera(vec3 moveBy) {
 	CAMERA->move(moveBy);
 }
 
-void Simulator::bindVertices(float *vertices, int size) {
+void Simulator::bindVertices(const std::vector<vec3> *vertices) {
 	/***********************************/
 	/* VERTEX DATA, ATTRIBUTES; BUFFERS*/
 	/***********************************/
@@ -45,49 +46,49 @@ void Simulator::bindVertices(float *vertices, int size) {
 	//	0.0f,  0.5f, -1.f
 	//};
 
-	float cube[] = {
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-		0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	//float cube[] = {
+	//	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	//	0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+	//	0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	//	0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	//	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	//	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	//	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	//	0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	//	0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	//	0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	//	-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+	//	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
 
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	//	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	//	-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	//	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	//	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	//	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	//	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	//	0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	//	0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	//	0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	//	0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	//	0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	//	0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-		0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	//	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	//	0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+	//	0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	//	0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	//	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	//	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
 
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-	};
+	//	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	//	0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	//	0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	//	0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	//	-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+	//	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+	//};
 
 	/*Generate VBO and VAO*/
 	glGenBuffers(1, &VBO);
@@ -95,13 +96,12 @@ void Simulator::bindVertices(float *vertices, int size) {
 
 	/* Bind VBO and set VBO data */
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float)*size, vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertices->size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
 
 	/* Bind VAO and set VAO configuration */
 	glBindVertexArray(VAO);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*) 0);
 	glEnableVertexAttribArray(0);
-	std::cout << sizeof(float) << " ";
 
 	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 	//glBindVertexArray(0);
@@ -114,7 +114,7 @@ void Simulator::drawContents() {
 	//Model matrix (CALCULATED PER OBJECT)
 	glm::mat4 o2w;
 	//o2w = rotate(o2w, glm::radians(55.f), glm::vec3(1.0f, 0.3f, 0.5f));
-	o2w = translate(o2w, vec3(0, 0, 0));
+	o2w = scale(o2w, vec3(0.8f, 0.8f, 1.f));
 
 	//View matrix
 	glm::mat4 w2c;
@@ -134,5 +134,5 @@ void Simulator::drawContents() {
 	/* DRAW */
 	glBindVertexArray(VAO); //If switching objects, rebind different VAO
 	//glDrawArrays(GL_TRIANGLES, 0, 3);
-	glDrawArrays(GL_LINE_STRIP , 0, 9); //Parameters: Primitive to draw, range of vertex array to draw
+	glDrawArrays(GL_POINTS, 0, 9); //Parameters: Primitive to draw, range of vertex array to draw
 }

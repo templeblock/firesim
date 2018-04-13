@@ -1,6 +1,8 @@
 #ifndef SIMULATOR_H
 #define SIMULATOR_H
 
+#include <vector>
+
 #include "camera.h"
 #include "shader.h"
 #include "grid.h"
@@ -15,7 +17,7 @@ public:
 	}
 	void init();
 
-	void bindVertices(float *vertices, int size);
+	void bindVertices(const std::vector<vec3> *vertices);
 	void drawContents();
 	void moveCamera(vec3 moveBy);
 
