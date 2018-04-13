@@ -34,7 +34,7 @@ std::vector<vec3> Grid::getVertices()
 	double inc = 2.0 / (double) gridSize;
 	for (int i = 0; i <= gridSize; i++) {
 		for (int j = 0; j <= gridSize; j++) {
-			vert.push_back(vec3(i * inc, j * inc, 0.0));
+			vert.push_back(vec3(i * inc - 1.0, j * inc - 1.0, 0.0));
 		}
 	}
 	return vert;
@@ -46,7 +46,7 @@ std::vector<vec3> Grid::getCentroids() {
 	double inc = 2.0 / (double)gridSize;
 	for (int i = 0; i < gridSize; i++) {
 		for (int j = 0; j < gridSize; j++) {
-			cent.push_back(vec3((i + 0.5) * inc, (j + 0.5) * inc, 0.0));
+			cent.push_back(vec3((i + 0.5) * inc - 1.0, (j + 0.5) * inc - 1.0, 0.0));
 		}
 	}
 	return cent;
