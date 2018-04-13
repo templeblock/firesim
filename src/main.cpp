@@ -66,7 +66,7 @@ int main(void) {
 	/* Initialize Simulation */
 	/*************************/
 
-	simulation = new Simulator(SCR_HEIGHT, SCR_WIDTH);
+	simulation = new Simulator(SCR_WIDTH, SCR_HEIGHT);
 	simulation->init();
 
 	/***************/
@@ -83,9 +83,6 @@ int main(void) {
 		processInput(window);
 
 		/** Render **/
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 		simulation->drawContents();
 
 		/**Swap buffers & poll IO events**/
@@ -111,7 +108,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	// make sure the viewport matches the new window dimensions; note that width and 
 	// height will be significantly larger than specified on retina displays.
-	glViewport(0, 0, width, height);
+	simulation->changeScrDimensions(width, height);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {

@@ -12,32 +12,42 @@ void Simulator::init() {
 
 	/* Create new grid */
 	grid = new Grid();
-	grid->init(15);
+	grid->init(9);
 
 	/* Create Camera and Set Projection Matrix */
 	CAMERA = new Camera();
 	CAMERA->init();
 
 	/* BUILD & COMPILE SHADERS */
-	shader = new Shader("../src/shaders/shader.vert", "../src/shaders/shader.frag");
-	shader->use();
-
-	//Projection matrix (Camera to screen)
-	glm::mat4 c2s;
-	c2s = perspective(radians(60.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-	//c2s = ortho(0.f, SCR_WIDTH, 0.f, SCR_HEIGHT, 0.1f, 100.f);
-	shader->setMat4("projection", c2s);
-	glEnable(GL_DEPTH_TEST);
-
+	//cellShader = new Shader("../src/shaders/shader.vert", "../src/shaders/shader.frag");
+	gridShader = new Shader("../src/shaders/shader.vert", "../src/shaders/shader.frag");
+	gridShader->use();
+	
 	/*Misc*/
-	glPointSize(5.f);
+	glEnable(GL_DEPTH_TEST);
+	glPointSize(4.f);
 
 	/*Bind VBO, VAO*/
 	bindVertices();
+
+	/*Set Perspective Matrix*/
+	changeScrDimensions(SCR_WIDTH, SCR_HEIGHT);
 }
 
 void Simulator::moveCamera(vec3 moveBy) {
 	CAMERA->move(moveBy);
+}
+
+void Simulator::changeScrDimensions(int width, int height) {
+	SCR_WIDTH = width;
+	SCR_HEIGHT = height;
+
+	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+
+	//Projection matrix (Camera to screen)
+	glm::mat4 c2s;
+	c2s = perspective(radians(60.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+	gridShader->setMat4("projection", c2s);
 }
 
 void Simulator::bindVertices() {
@@ -47,15 +57,11 @@ void Simulator::bindVertices() {
 	/*****************/
 
 	int gridWidth = grid->grid_size;
+	gridVBO = std::vector<GLuint> (gridWidth * gridWidth, 0);
+	gridVAO = std::vector<GLuint> (gridWidth * gridWidth, 0);
 
-	gridVBO = new std::vector<GLuint>;
-	gridVAO = new std::vector<GLuint>;
-
-	gridVBO->resize(gridWidth * gridWidth * 2 + gridWidth + gridWidth + 1);
-	gridVAO->resize(gridWidth * gridWidth * 2 + gridWidth + gridWidth + 1);
-
-	glGenBuffers(gridWidth * gridWidth * 2 + gridWidth + gridWidth + 1, &(*gridVBO)[0]);
-	glGenVertexArrays(gridWidth * gridWidth * 2 + gridWidth + gridWidth + 1, &(*gridVAO)[0]);
+	glGenBuffers(gridWidth * gridWidth, &gridVBO[0]);
+	glGenVertexArrays(gridWidth * gridWidth, &gridVAO[0]);
 
 	//for (int i = 0; i < vertices.size()/3; i++) {
 	//	/* Bind VBOs and set VBO data */
@@ -68,54 +74,47 @@ void Simulator::bindVertices() {
 	//	glEnableVertexAttribArray(0);
 	//}
 
-	int index = 0;
-	std::vector<float> *vertices = grid->vertices;
+	//int index = 0;
+	std::vector<float> border = std::vector<float> (0);
+	border.reserve(15);
 
-	std::vector<float> *border;
-	border = new std::vector<float>;
-
-	for (int i = 0; i < gridWidth; i++) {
-
-		for (int j = 0; j < gridWidth; j++) {
-			//BOTTOM OF CELL
-			bindVertexSet(index, i * (gridWidth + 1) * 3 + (j*3), *(grid->vertices));
-			index++;
-
-			//LEFT OF CELL
-			border->clear();
-			border->push_back ((*vertices)[i * (gridWidth+1) * 3 + (j * 3)]);
-			border->push_back ((*vertices)[(i * (gridWidth + 1) * 3) + 1 + (j * 3)]);
-			border->push_back ((*vertices)[(i * (gridWidth + 1) * 3) + 2 + (j * 3)]);
-			border->push_back ((*vertices)[(i + 1)*(gridWidth + 1) * 3 + (j * 3)]);
-			border->push_back ((*vertices)[(i + 1)*(gridWidth + 1) * 3 + 1 + (j * 3)]);
-			border->push_back ((*vertices)[(i + 1)*(gridWidth + 1) * 3 + 2 + (j * 3)]);
-			bindVertexSet(index, 0, *border);
-			index++;
-		}
-
-		//RIGHT GRID BORDER
-		border->clear();
-		border->push_back ((*vertices)[i * (gridWidth+1) * 3 + (gridWidth * 3)]);
-		border->push_back ((*vertices)[(i * (gridWidth + 1) * 3) + 1 + (gridWidth * 3)]);
-		border->push_back ((*vertices)[(i * (gridWidth + 1) * 3) + 2 + (gridWidth * 3)]);
-		border->push_back ((*vertices)[(i + 1)*(gridWidth + 1) * 3 + (gridWidth * 3)]);
-		border->push_back ((*vertices)[(i + 1)*(gridWidth + 1) * 3 + 1 + (gridWidth * 3)]);
-		border->push_back ((*vertices)[(i + 1)*(gridWidth + 1) * 3 + 2 + (gridWidth * 3)]);
-		bindVertexSet(index, 0, *border);
-		index++;
-	}
- 
 	for (int j = 0; j < gridWidth; j++) {
-		//TOP OF GRID
-		bindVertexSet(index, gridWidth * (gridWidth + 1) * 3 + (j * 3), *(grid->vertices));
-		index++;
+		for (int i = 0; i < gridWidth; i++) {
+			border.clear();
+			//Bottom Left Corner
+			border.push_back(grid->vertices[j * (gridWidth+1) + i].x);
+			border.push_back(grid->vertices[j * (gridWidth + 1) + i].y);
+			border.push_back(grid->vertices[j * (gridWidth + 1) + i].z);
+			//Top Right Corner
+			border.push_back(grid->vertices[(j + 1) * (gridWidth + 1) + i + 1].x);
+			border.push_back(grid->vertices[(j + 1) * (gridWidth + 1) + i + 1].y);
+			border.push_back(grid->vertices[(j + 1) * (gridWidth + 1) + i + 1].z);
+			//Bottom Right Corner
+			border.push_back(grid->vertices[j * (gridWidth + 1) + i + 1].x);
+			border.push_back(grid->vertices[j * (gridWidth + 1) + i + 1].y);
+			border.push_back(grid->vertices[j * (gridWidth + 1) + i + 1].z);
+			//Bottom Left Corner
+			border.push_back(grid->vertices[j * (gridWidth + 1) + i].x);
+			border.push_back(grid->vertices[j * (gridWidth + 1) + i].y);
+			border.push_back(grid->vertices[j * (gridWidth + 1) + i].z);
+			//Top Left Corner
+			border.push_back(grid->vertices[(j + 1) * (gridWidth + 1) + i].x);
+			border.push_back(grid->vertices[(j + 1) * (gridWidth + 1) + i + 1].y);
+			border.push_back(grid->vertices[(j + 1) * (gridWidth + 1) + i + 1].z);
+			//Top Right Corner
+			border.push_back(grid->vertices[(j + 1) * (gridWidth + 1) + i + 1].x);
+			border.push_back(grid->vertices[(j + 1) * (gridWidth + 1) + i + 1].y);
+			border.push_back(grid->vertices[(j + 1) * (gridWidth + 1) + i + 1].z);
+			/* Bind */
+			bindVertexSet(j*gridWidth + i, 18, border);
+		}
 	}
 
 	/*******************/
 	/* Velocity Arrows */
 	/*******************/
 
-	//Create one arrow, which is transformed for each grid cell
+	//Create one arrow, which will be transformed for each grid cell
 	float arrow[] = {
 		0.f, 0.f, 0.f,
 		0.f, .6f, 0.f
@@ -139,18 +138,23 @@ void Simulator::bindVertices() {
 	glBindVertexArray(0);
 }
 
-void Simulator::bindVertexSet(unsigned int index, unsigned int pointer, const std::vector<float> vertices) {
+void Simulator::bindVertexSet(unsigned int index, unsigned int size, const std::vector<float> vertices) {
 	/* Bind VBOs and set VBO data */
-	glBindBuffer(GL_ARRAY_BUFFER, (*gridVBO)[index]);
-	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), &vertices[pointer], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, gridVBO[index]);
+	glBufferData(GL_ARRAY_BUFFER, size * sizeof(float), &vertices[0], GL_STATIC_DRAW);
 
 	/* Bind VAO and set VAO configuration */
-	glBindVertexArray((*gridVAO)[index]);
+	glBindVertexArray((gridVAO)[index]);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void*)0);
 	glEnableVertexAttribArray(0);
 }
 
 void Simulator::drawContents() {
+
+	/* CLEAR PREVIOUS */
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	/* Set View Matrix */
 
 	//SAMPLE ROTATING CAMERA
@@ -163,8 +167,7 @@ void Simulator::drawContents() {
 	//View matrix
 	glm::mat4 w2c;
 	w2c = CAMERA->getViewMatrix();
-	shader->setMat4("view", w2c);
-
+	gridShader->setMat4("view", w2c);
 
 	/* DRAW */
 	drawGrid();
@@ -177,14 +180,19 @@ void Simulator::drawGrid() {
 	//Model matrix (CALCULATED PER OBJECT)
 	glm::mat4 o2w;
 	o2w = scale(o2w, vec3(1.f, 1.f, 1.f));
-	shader->setMat4("model", o2w);
+	gridShader->setMat4("model", o2w);
 
 	//glDrawArrays(GL_POINTS, 0, grid->vertices->size() - 3); //Parameters: Primitive to draw, range of vertex array to draw
 	//glDrawArrays(GL_LINE_STRIP, 0, 3); //Parameters: Primitive to draw, range of vertex array to draw
 
-	for (int i = 0; i < gridVAO->size(); i++) {
-		glBindVertexArray((*gridVAO)[i]);
-		glDrawArrays(GL_LINES, 0, 2);
+	for (int i = 0; i < gridVAO.size(); i++) {
+		glBindVertexArray(gridVAO[i]);
+		////BOXES
+		//cellShader->use();
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
+		//GRID ONLY
+		gridShader->use();
+		glDrawArrays(GL_LINE_LOOP, 1, 4);
 		glBindVertexArray(0);
 	}
 }
@@ -192,6 +200,7 @@ void Simulator::drawGrid() {
 //Called in drawContents()
 void Simulator::drawArrows() {
 
+	gridShader->use();
 	glBindVertexArray(velocityVAO);
 
 	for (int i = 0; i < grid->centroid_vecs.size(); i++) {
@@ -209,7 +218,7 @@ void Simulator::drawArrows() {
 		o2w = translate(o2w, grid->centroid_vecs[i]);
 		o2w = scale(o2w, vec3(grid->cell_size/2.f, grid->cell_size/2.f, 1.f));
 		o2w = rotate(o2w, angle, vec3(0.f, 0.f, 1.f));
-		shader->setMat4("model", o2w);
+		gridShader->setMat4("model", o2w);
 
 		glDrawArrays(GL_LINES, 0, 2);
 		glDrawArrays(GL_POINTS, 0, 2);

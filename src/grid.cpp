@@ -18,16 +18,14 @@ void Grid::init(int size) {
 
 void Grid::setVertices()
 {
-	vertices = new std::vector<float>;
-	vertices->reserve(grid_size * grid_size * 3);
+	vertices = std::vector<vec3> (0);
+	vertices.reserve((grid_size+1) * (grid_size+1));
 	double inc = cell_size;
 	double current_height = -1.f;
 	for (int j = 0; j <= grid_size; j++) {
 		double current_width = -1.f;
 		for (int i = 0; i <= grid_size; i++) {
-			vertices->push_back(current_width);
-			vertices->push_back(current_height);
-			vertices->push_back(0.0f);
+			vertices.push_back(vec3(current_width, current_height, 0.0f));
 			current_width += inc;
 		}
 		current_height += inc;

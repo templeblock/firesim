@@ -11,7 +11,7 @@ class Simulator {
 	
 public:
 
-	Simulator(float height, float width) {
+	Simulator(float width, float height) {
 		SCR_HEIGHT = height;
 		SCR_WIDTH = width;
 	}
@@ -27,9 +27,11 @@ public:
 
 	void moveCamera(vec3 moveBy);
 
+	void changeScrDimensions(int width, int height);
+
 private:
-	std::vector<GLuint> *gridVBO;
-	std::vector<GLuint> *gridVAO;
+	std::vector<GLuint> gridVBO;
+	std::vector<GLuint> gridVAO;
 
 	//std::vector<GLuint> *velocityVBO;
 	//std::vector<GLuint> *velocityVAO;
@@ -38,7 +40,8 @@ private:
 	GLuint velocityVAO;
 
 	Camera *CAMERA;
-	Shader *shader;
+	Shader *gridShader;
+	Shader *cellShader;
 	Grid *grid;
 	
 	float SCR_HEIGHT;

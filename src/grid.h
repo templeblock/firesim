@@ -19,7 +19,7 @@ public:
 
 	int grid_size;
 	float cell_size;
-	std::vector<float> *vertices;
+	std::vector<vec3> vertices;
 	std::vector<vec3> centroid_vecs;
 	std::vector<vec3> arrows;
 
