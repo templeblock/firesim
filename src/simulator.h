@@ -17,20 +17,32 @@ public:
 	}
 	void init();
 
-	void bindVertices(const std::vector<vec3> *vertices);
+	void bindVertices();
+	void bindVertexSet(unsigned int index, unsigned int pointer, const std::vector<float> vertices);
+
 	void drawContents();
+	void drawGrid();
+
+	void drawArrows();
+
 	void moveCamera(vec3 moveBy);
 
 private:
-	GLuint VBO;
-	GLuint VAO;
+	std::vector<GLuint> *gridVBO;
+	std::vector<GLuint> *gridVAO;
+
+	//std::vector<GLuint> *velocityVBO;
+	//std::vector<GLuint> *velocityVAO;
+
+	GLuint velocityVBO;
+	GLuint velocityVAO;
 
 	Camera *CAMERA;
 	Shader *shader;
 	Grid *grid;
 	
-	unsigned int SCR_HEIGHT;
-	unsigned int SCR_WIDTH;
+	float SCR_HEIGHT;
+	float SCR_WIDTH;
 };
 
 #endif

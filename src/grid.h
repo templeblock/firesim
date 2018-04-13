@@ -12,17 +12,19 @@ public:
 
 	/*Init*/
 	Grid() {}
-	void init();
+	void init(int size);
 
-	int getVertexArraySize();
-	std::vector<vec3> getVertices();
-	std::vector<vec3> getCentroids();
-	std::vector<vec3> getScalarEndpoints();
+	void setVertices();
+	void setCentroids();
 
 	int grid_size;
+	float cell_size;
+	std::vector<float> *vertices;
+	std::vector<vec3> centroid_vecs;
+	std::vector<vec3> arrows;
+
 	std::vector<vec3> velocities;
 	std::vector<float> pressures;
-	float *vertices;
 
 	/*Simulation*/
 	//calculate advection func
