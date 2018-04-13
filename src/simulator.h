@@ -15,18 +15,21 @@ public:
 		SCR_HEIGHT = height;
 		SCR_WIDTH = width;
 	}
-	void init();
 
+	/* Setup */
+	void init();
 	void bindVertices();
 	void bindVertexSet(unsigned int index, unsigned int pointer, const std::vector<float> vertices);
 
+	/* Run Simulation */
+	void simulate(float time);
+
 	void drawContents();
 	void drawGrid();
-
 	void drawArrows();
 
+	/* Interaction */
 	void moveCamera(vec3 moveBy);
-
 	void changeScrDimensions(int width, int height);
 
 private:

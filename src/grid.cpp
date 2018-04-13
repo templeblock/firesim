@@ -2,6 +2,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <iostream>
+#include "simulator.h"
 
 using namespace glm;
 
@@ -15,6 +16,10 @@ void Grid::init(int size) {
 	setVertices();
 	setCentroids();
 }
+
+/******************************/
+/* INIT, COORDINATES, VISUALS */
+/******************************/
 
 void Grid::setVertices()
 {
@@ -39,5 +44,17 @@ void Grid::setCentroids() {
 		for (int i = 0; i < grid_size; i++) {
 			centroid_vecs[j*grid_size + i] = vec3((i + 0.5) * inc - 1.0, (j + 0.5) * inc - 1.0, 0.f);
 		}
+	}
+}
+
+/**************/
+/* Simulation */
+/**************/
+
+void Grid::calculateVelocity(float time) {
+	//Test function
+	for (int i = 0; i < velocities.size(); i++) {
+		velocities[i].x = sin(time);
+		velocities[i].y = cos(time);
 	}
 }

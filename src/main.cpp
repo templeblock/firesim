@@ -83,7 +83,7 @@ int main(void) {
 		processInput(window);
 
 		/** Render **/
-		simulation->drawContents();
+		simulation->simulate(glfwGetTime());
 
 		/**Swap buffers & poll IO events**/
 		glfwSwapBuffers(window);

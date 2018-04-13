@@ -19,9 +19,8 @@ void Simulator::init() {
 	CAMERA->init();
 
 	/* BUILD & COMPILE SHADERS */
-	//cellShader = new Shader("../src/shaders/shader.vert", "../src/shaders/shader.frag");
+	cellShader = new Shader("../src/shaders/shader.vert", "../src/shaders/texShader.frag");
 	gridShader = new Shader("../src/shaders/shader.vert", "../src/shaders/shader.frag");
-	gridShader->use();
 	
 	/*Misc*/
 	glEnable(GL_DEPTH_TEST);
@@ -47,7 +46,11 @@ void Simulator::changeScrDimensions(int width, int height) {
 	//Projection matrix (Camera to screen)
 	glm::mat4 c2s;
 	c2s = perspective(radians(60.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+
+	gridShader->use();
 	gridShader->setMat4("projection", c2s);
+	cellShader->use();
+	cellShader->setMat4("projection", c2s);
 }
 
 void Simulator::bindVertices() {
@@ -116,8 +119,8 @@ void Simulator::bindVertices() {
 
 	//Create one arrow, which will be transformed for each grid cell
 	float arrow[] = {
-		0.f, 0.f, 0.f,
-		0.f, .6f, 0.f
+		0.f, 0.f, 0.0f,
+		0.f, .6f, 0.0f
 	};
 
 	glGenBuffers(1, &velocityVBO);
@@ -149,10 +152,15 @@ void Simulator::bindVertexSet(unsigned int index, unsigned int size, const std::
 	glEnableVertexAttribArray(0);
 }
 
+void Simulator::simulate(float time) {
+	grid->calculateVelocity(time);
+	drawContents();
+}
+
 void Simulator::drawContents() {
 
 	/* CLEAR PREVIOUS */
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	/* Set View Matrix */
@@ -167,11 +175,16 @@ void Simulator::drawContents() {
 	//View matrix
 	glm::mat4 w2c;
 	w2c = CAMERA->getViewMatrix();
+
+	gridShader->use();
 	gridShader->setMat4("view", w2c);
 
+	cellShader->use();
+	cellShader->setMat4("view", w2c);
+
 	/* DRAW */
-	drawGrid();
 	drawArrows();
+	drawGrid();
 }
 
 //Called in drawContents()
@@ -180,6 +193,10 @@ void Simulator::drawGrid() {
 	//Model matrix (CALCULATED PER OBJECT)
 	glm::mat4 o2w;
 	o2w = scale(o2w, vec3(1.f, 1.f, 1.f));
+
+	cellShader->use();
+	cellShader->setMat4("model", o2w);
+	gridShader->use();
 	gridShader->setMat4("model", o2w);
 
 	//glDrawArrays(GL_POINTS, 0, grid->vertices->size() - 3); //Parameters: Primitive to draw, range of vertex array to draw
@@ -187,12 +204,12 @@ void Simulator::drawGrid() {
 
 	for (int i = 0; i < gridVAO.size(); i++) {
 		glBindVertexArray(gridVAO[i]);
-		////BOXES
-		//cellShader->use();
-		//glDrawArrays(GL_TRIANGLES, 0, 6);
 		//GRID ONLY
 		gridShader->use();
 		glDrawArrays(GL_LINE_LOOP, 1, 4);
+		//CELL BGS
+		cellShader->use();
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 	}
 }

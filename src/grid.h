@@ -14,8 +14,12 @@ public:
 	Grid() {}
 	void init(int size);
 
+	/* Init, Dimensions, Locations */
 	void setVertices();
 	void setCentroids();
+
+	/* Simulation */
+	void calculateVelocity(float deltaTime);
 
 	int grid_size;
 	float cell_size;
