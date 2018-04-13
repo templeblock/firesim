@@ -2,6 +2,7 @@
 #define GRID_H
 #include <vector>
 
+#include <vector>
 #include <glm/glm.hpp>
 using namespace glm;
 
@@ -14,12 +15,13 @@ public:
 	void init();
 
 	int getVertexArraySize();
-
 	std::vector<vec3> getVertices();
 	std::vector<vec3> getCentroids();
 
-	float *vertices;
 	int grid_size;
+	std::vector<vec2> velocities;
+	std::vector<float> pressures;
+	float *vertices;
 
 	/*Simulation*/
 	//calculate advection func
