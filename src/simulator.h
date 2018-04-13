@@ -1,8 +1,9 @@
-#ifndef GRID_H
-#define GRID_H
+#ifndef SIMULATOR_H
+#define SIMULATOR_H
 
 #include "camera.h"
 #include "shader.h"
+#include "grid.h"
 
 class Simulator {
 	
@@ -14,7 +15,7 @@ public:
 	}
 	void init();
 
-	void bindVertices();
+	void bindVertices(float *vertices, int size);
 	void drawContents();
 	void moveCamera(vec3 moveBy);
 
@@ -24,10 +25,10 @@ private:
 
 	Camera *CAMERA;
 	Shader *shader;
+	Grid *grid;
 	
 	unsigned int SCR_HEIGHT;
 	unsigned int SCR_WIDTH;
-
 };
 
 #endif

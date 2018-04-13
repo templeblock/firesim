@@ -7,6 +7,10 @@ using namespace glm;
 
 void Simulator::init() {
 
+	/* Create new grid */
+	grid = new Grid();
+	grid->init();
+
 	/* BUILD & COMPILE SHADERS */
 	shader = new Shader("../src/shaders/shader.vert", "../src/shaders/shader.frag");
 	shader->use();
@@ -17,19 +21,19 @@ void Simulator::init() {
 
 	//Projection matrix (Camera to screen)
 	glm::mat4 c2s;
-	c2s = perspective(radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+	c2s = perspective(radians(60.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 	shader->setMat4("projection", c2s);
 	glEnable(GL_DEPTH_TEST);
 
 	/*Bind VBO, VAO*/
-	bindVertices();
+	bindVertices(grid->vertices, grid->getVertexArraySize());
 }
 
 void Simulator::moveCamera(vec3 moveBy) {
 	CAMERA->move(moveBy);
 }
 
-void Simulator::bindVertices() {
+void Simulator::bindVertices(float *vertices, int size) {
 	/***********************************/
 	/* VERTEX DATA, ATTRIBUTES; BUFFERS*/
 	/***********************************/
@@ -91,12 +95,13 @@ void Simulator::bindVertices() {
 
 	/* Bind VBO and set VBO data */
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float)*size, vertices, GL_STATIC_DRAW);
 
 	/* Bind VAO and set VAO configuration */
 	glBindVertexArray(VAO);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) 0);
 	glEnableVertexAttribArray(0);
+	std::cout << sizeof(float) << " ";
 
 	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 	//glBindVertexArray(0);
@@ -108,7 +113,8 @@ void Simulator::drawContents() {
 	//Calculate Transform Matrices
 	//Model matrix (CALCULATED PER OBJECT)
 	glm::mat4 o2w;
-	o2w = rotate(o2w, glm::radians(55.f), glm::vec3(1.0f, 0.3f, 0.5f));
+	//o2w = rotate(o2w, glm::radians(55.f), glm::vec3(1.0f, 0.3f, 0.5f));
+	o2w = translate(o2w, vec3(0, 0, 0));
 
 	//View matrix
 	glm::mat4 w2c;
@@ -128,5 +134,5 @@ void Simulator::drawContents() {
 	/* DRAW */
 	glBindVertexArray(VAO); //If switching objects, rebind different VAO
 	//glDrawArrays(GL_TRIANGLES, 0, 3);
-	glDrawArrays(GL_LINES, 0, 36); //Parameters: Primitive to draw, range of vertex array to draw
+	glDrawArrays(GL_LINE_STRIP , 0, 9); //Parameters: Primitive to draw, range of vertex array to draw
 }

@@ -1,12 +1,21 @@
 #ifndef GRID_H
 #define GRID_H
 
+#include <glm/glm.hpp>
+using namespace glm;
+
 class Grid {
 
 public:
 
 	/*Init*/
-	//build grid func
+	Grid() {}
+	void init();
+
+	int getVertexArraySize();
+
+	float *vertices;
+	int grid_size;
 
 	/*Simulation*/
 	//calculate advection func

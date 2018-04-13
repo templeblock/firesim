@@ -7,7 +7,7 @@
 using namespace glm;
 
 void Camera::init() {
-	camPos = vec3(0.f, 0.f, 3.f);
+	camPos = vec3(0.f, 0.f, 1.f);
 	camTarget = vec3(0.f, 0.f, 0.f);
 	calculateAxes();
 	getViewMatrix();
