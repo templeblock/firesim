@@ -21,7 +21,7 @@ void Simulator::init() {
 	/* BUILD & COMPILE SHADERS */
 	cellShader = new Shader("../src/shaders/shader.vert", "../src/shaders/texShader.frag");
 	gridShader = new Shader("../src/shaders/shader.vert", "../src/shaders/shader.frag");
-	
+
 	/*Misc*/
 	glEnable(GL_DEPTH_TEST);
 	glPointSize(4.f);
@@ -153,7 +153,7 @@ void Simulator::bindVertexSet(unsigned int index, unsigned int size, const std::
 }
 
 void Simulator::simulate(float time) {
-	grid->calculateVelocity(time);
+	grid->calculateAdvection(time);
 	drawContents();
 }
 

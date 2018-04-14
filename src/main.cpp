@@ -40,7 +40,7 @@ int main(void) {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // We want OpenGL 3.3
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // We don't want the old OpenGL 
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // We don't want the old OpenGL
 
 	GLFWwindow* window; // (In the accompanying source code, this variable is global for simplicity)
 	window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "FireSim", NULL, NULL);
@@ -83,7 +83,7 @@ int main(void) {
 		processInput(window);
 
 		/** Render **/
-		simulation->simulate(glfwGetTime());
+		simulation->simulate(deltaTime);
 
 		/**Swap buffers & poll IO events**/
 		glfwSwapBuffers(window);
@@ -106,7 +106,7 @@ void processInput(GLFWwindow *window) {
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-	// make sure the viewport matches the new window dimensions; note that width and 
+	// make sure the viewport matches the new window dimensions; note that width and
 	// height will be significantly larger than specified on retina displays.
 	simulation->changeScrDimensions(width, height);
 }

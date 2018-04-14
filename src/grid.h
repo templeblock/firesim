@@ -19,7 +19,9 @@ public:
 	void setCentroids();
 
 	/* Simulation */
-	void calculateVelocity(float deltaTime);
+	void calculateVelocity(float time);
+	vec3 nearestBilerp(vec3 position);
+	void calculateAdvection(float deltaTime);
 
 	int grid_size;
 	float cell_size;
