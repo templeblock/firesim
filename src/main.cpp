@@ -72,18 +72,22 @@ int main(void) {
 	/***************/
 	/* RENDER LOOP */
 	/***************/
+	int frame = 0;
 
 	while (!glfwWindowShouldClose(window)) {
 
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
+		frame++;
 
 		/**Input**/
 		processInput(window);
 
 		/** Render **/
-		simulation->simulate(deltaTime);
+		if (frame % 5 == 0) {
+			simulation->simulate(deltaTime);
+		}
 
 		/**Swap buffers & poll IO events**/
 		glfwSwapBuffers(window);

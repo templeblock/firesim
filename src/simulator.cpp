@@ -12,7 +12,7 @@ void Simulator::init() {
 
 	/* Create new grid */
 	grid = new Grid();
-	grid->init(9);
+	grid->init(50);
 
 	/* Create Camera and Set Projection Matrix */
 	CAMERA = new Camera();

@@ -10,7 +10,18 @@ void Grid::init(int size) {
 	grid_size = size;
 	cell_size = 2.0 / (double)grid_size;
 
-	velocities = std::vector<vec3>(grid_size * grid_size, vec3(0.f, 1.f, 0.f));
+	velocities = std::vector<dvec3>(grid_size * grid_size, dvec3(0.f, 1.f, 0.f));
+	//Randomly generate vector field
+	for (int i = 0; i < velocities.size(); i++) {
+		float random_x = rand() % 20;
+		float random_y = rand() % 20;
+		random_x = (random_x - 10) / 10;
+		random_y = (random_y - 10) / 10;
+		velocities[i] = dvec3(random_x, random_y, 0.f);
+		if (length(velocities[i]) != 0) {
+			velocities[i] = normalize(velocities[i]);
+		}
+	}
 	pressures = std::vector<float>(grid_size * grid_size, 0.0);
 
 	setVertices();
@@ -60,66 +71,72 @@ void Grid::calculateVelocity(float time) {
 }
 
 vec3 lerp(float t, vec3 a, vec3 b) {
-	return a + ((b - a) * t);
+	return t * b + (1.f - t) * a;
+	//return a + ((b - a) * t);
 }
 
 vec3 Grid::nearestBilerp(vec3 position) {
-	// current cell we're in
+	// Find index of cell that holds position
 	int box_x = floor((position.x + 1.0)/cell_size);
 	int box_y = floor((position.y + 1.0)/cell_size);
-	int horizontal_neighbor;
-	int vertical_neighbor;
-	float t_x;
-	float t_y;
+	box_x = clamp(box_x, 0, grid_size - 1);
+	box_y = clamp(box_y, 0, grid_size - 1);
+
+	int horizontal_neighbor, vertical_neighbor;
+	float t_x, t_y;
+
 	// test against centroids of horizontal neighboring cells
-	if (fmod(box_x, grid_size) == 0) {
+	if (box_x == 0) {
 		horizontal_neighbor = box_x + 1;
-		// t_x = position.x -
-	} else if (fmod(box_x + 1, grid_size) == 0) {
+		t_x = 0;
+	} else if (box_x == grid_size - 1) {
 		horizontal_neighbor = box_x - 1;
+		t_x = 0;
 	} else {
-		float test_left = length(centroid_vecs[box_y * grid_size + (box_x - 1)] - position);
-		float test_right = length(centroid_vecs[box_y * grid_size + (box_x + 1)] - position);
+		float test_left = distance(centroid_vecs[box_y * grid_size + (box_x - 1)], position);
+		float test_right = distance(centroid_vecs[box_y * grid_size + (box_x + 1)], position);
 		if (test_left < test_right) {
 			horizontal_neighbor = box_x - 1;
 		} else {
 			horizontal_neighbor = box_x + 1;
 		}
-		t_x = position.x - centroid_vecs[box_y * grid_size + box_x].x;
+		t_x = abs(position.x - centroid_vecs[box_y * grid_size + box_x].x);
 		t_x /= cell_size;
 	}
 	// test against centroids of vertical neighboring cells
 	if (box_y == 0) {
 		vertical_neighbor = box_y + 1;
-	} else if (box_y == grid_size) {
+		t_y = 0;
+	} else if (box_y == grid_size - 1) {
 		vertical_neighbor = box_y - 1;
+		t_y = 0;
 	} else {
-		float test_top = length(centroid_vecs[(box_y + 1) * grid_size + box_x] - position);
-		float test_bottom = length(centroid_vecs[(box_y - 1) * grid_size + box_x] - position);
+		float test_top = distance(centroid_vecs[(box_y + 1) * grid_size + box_x], position);
+		float test_bottom = distance(centroid_vecs[(box_y - 1) * grid_size + box_x], position);
 		if (test_top < test_bottom) {
 			vertical_neighbor = box_y + 1;
 		} else {
 			vertical_neighbor = box_y - 1;
 		}
-		t_y = position.y - centroid_vecs[box_y * grid_size + box_x].y;
+		t_y = abs(position.y - centroid_vecs[box_y * grid_size + box_x].y);
 		t_y /= cell_size;
 	}
 
 	// TODO: make this more general to include both velocities and pressures, etc.
-	vec3 first_ho = lerp(t_x, velocities[(box_y * grid_size) + horizontal_neighbor],
+	dvec3 first_ho = lerp(t_x, velocities[(box_y * grid_size) + horizontal_neighbor],
 														velocities[(box_y * grid_size) + box_x]);
-	vec3 second_ho = lerp(t_x, velocities[(vertical_neighbor * grid_size) + horizontal_neighbor],
+	dvec3 second_ho = lerp(t_x, velocities[(vertical_neighbor * grid_size) + horizontal_neighbor],
 														velocities[(vertical_neighbor * grid_size) + box_x]);
-	vec3 vertical = lerp(t_y, second_ho, first_ho);
+	dvec3 vertical = lerp(t_y, second_ho, first_ho);
 	return vertical;
 }
 
-void Grid::calculateAdvection(float deltaTime) {
+void Grid::calculateAdvection(double deltaTime) {
 	for (int j = 0; j < grid_size; ++j) {
 		for (int i = 0; i < grid_size; ++i) {
-			vec3 currPos = centroid_vecs[j * grid_size + i];
-			vec3 currVelocity = velocities[j * grid_size + i];
-			vec3 prevPos = currPos - currVelocity * deltaTime;
+			dvec3 currPos = centroid_vecs[j * grid_size + i];
+			dvec3 currVelocity = velocities[j * grid_size + i] * .2; //TODO change scalar to timestep; check that velocity magnitude is at least cell_size
+			dvec3 prevPos = currPos - currVelocity;
 			velocities[j * grid_size + i] = nearestBilerp(prevPos);
 		}
 	}

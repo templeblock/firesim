@@ -21,15 +21,14 @@ public:
 	/* Simulation */
 	void calculateVelocity(float time);
 	vec3 nearestBilerp(vec3 position);
-	void calculateAdvection(float deltaTime);
+	void calculateAdvection(double deltaTime);
 
 	int grid_size;
 	float cell_size;
 	std::vector<vec3> vertices;
 	std::vector<vec3> centroid_vecs;
-	std::vector<vec3> arrows;
 
-	std::vector<vec3> velocities;
+	std::vector<dvec3> velocities;
 	std::vector<float> pressures;
 
 	/*Simulation*/
