@@ -12,7 +12,7 @@ void Simulator::init() {
 
 	/* Create new grid */
 	grid = new Grid();
-	grid->init(50);
+	grid->init(60, 0.1, 1);
 
 	/* Create Camera and Set Projection Matrix */
 	CAMERA = new Camera();
@@ -59,7 +59,7 @@ void Simulator::bindVertices() {
 	/* GRID VERTICES */
 	/*****************/
 
-	int gridWidth = grid->grid_size;
+	int gridWidth = grid->grid_size + 2;
 	gridVBO = std::vector<GLuint> (gridWidth * gridWidth, 0);
 	gridVAO = std::vector<GLuint> (gridWidth * gridWidth, 0);
 
@@ -153,7 +153,8 @@ void Simulator::bindVertexSet(unsigned int index, unsigned int size, const std::
 }
 
 void Simulator::simulate(float time) {
-	grid->calculateAdvection(time);
+	grid->calculateAdvection();
+	grid->calculateDiffusion(20);
 	drawContents();
 }
 

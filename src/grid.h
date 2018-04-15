@@ -12,23 +12,34 @@ public:
 
 	/*Init*/
 	Grid() {}
-	void init(int size);
+	void init(int size, double timestep, double viscosity);
 
 	/* Init, Dimensions, Locations */
 	void setVertices();
 	void setCentroids();
 
+	int index (int x, int j);
+
 	/* Simulation */
 	void calculateVelocity(float time);
+	
 	vec3 nearestBilerp(vec3 position);
-	void calculateAdvection(double deltaTime);
+	void calculateAdvection();
+
+	void calculateDiffusion(int iterations);
+	void jacobiStepDiffuse(int i, int j);
+
+	void calculatePressure(int iterations);
 
 	int grid_size;
 	float cell_size;
 	std::vector<vec3> vertices;
 	std::vector<vec3> centroid_vecs;
 
+	double timeStep;
+	double viscosity;
 	std::vector<dvec3> velocities;
+	std::vector<dvec3> old_velocities;
 	std::vector<float> pressures;
 
 	/*Simulation*/
