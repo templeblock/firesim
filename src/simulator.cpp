@@ -12,7 +12,7 @@ void Simulator::init() {
 
 	/* Create new grid */
 	grid = new Grid();
-	grid->init(60, 0.1, 1);
+	grid->init(120, 0.05, 2);
 
 	/* Create Camera and Set Projection Matrix */
 	CAMERA = new Camera();
@@ -24,7 +24,7 @@ void Simulator::init() {
 
 	/*Misc*/
 	glEnable(GL_DEPTH_TEST);
-	glPointSize(4.f);
+	glPointSize(3.f);
 
 	/*Bind VBO, VAO*/
 	bindVertices();
@@ -154,7 +154,7 @@ void Simulator::bindVertexSet(unsigned int index, unsigned int size, const std::
 
 void Simulator::simulate(float time) {
 	grid->calculateAdvection();
-	grid->calculateDiffusion(20);
+	grid->calculateDiffusion(2);
 	drawContents();
 }
 
