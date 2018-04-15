@@ -30,6 +30,7 @@ void Grid::init(int size, double timestep, double viscosity) {
 
 	old_velocities = velocities;
 	pressures = std::vector<float>((grid_size+2) * (grid_size+2), 0.0);
+	old_pressures = pressures;
 
 	setVertices();
 	setCentroids();
@@ -97,7 +98,7 @@ vec3 Grid::nearestBilerp(vec3 position) {
 	int horizontal_neighbor, vertical_neighbor;
 	double t_x, t_y;
 
-	/*HORIZONTAL NEIGHBOR TEST*/
+	/* HORIZONTAL NEIGHBOR TEST */
 	float test_left = distance(centroid_vecs[index(box_x-1, box_y)], position);
 	float test_right = distance(centroid_vecs[index(box_x+1, box_y)], position);
 	if (test_left < test_right) {
@@ -108,7 +109,7 @@ vec3 Grid::nearestBilerp(vec3 position) {
 	t_x = abs(position.x - centroid_vecs[index(box_x, box_y)].x)/cell_size;
 	t_x = clamp(t_x, 0., 1.);
 
-	/*VERTICAL NEIGHBOR TEST*/
+	/* VERTICAL NEIGHBOR TEST */
 	float test_top = distance(centroid_vecs[index(box_x, box_y + 1)], position);
 	float test_bottom = distance(centroid_vecs[index(box_x, box_y - 1)], position);
 	if (test_top < test_bottom) {
@@ -169,7 +170,16 @@ void Grid::calculatePressure(int iterations) {
 	//TODO
 	for (int j = 0; j < pressures.size(); j++) {
 		for (int i = 0; i < pressures.size(); i++) {
-
+			int n = index(i, j);
+			float alpha = -pow(pressures[n] - old_pressures[n], 2);
+			float beta = 1./4.;
+			float L = pressures[n - 1];
+			float R = pressures[n + 1];
+			float T = pressures[index(i, j+1)];
+			float B = pressures[index(i, j-1)];
+			float self = pressures[n];
+			old_pressures[n] = pressures[n];
+			pressures[n] = (L + R + B + T + alpha * self) * beta;
 		}
 	}
 }

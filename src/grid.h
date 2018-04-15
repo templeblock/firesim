@@ -22,7 +22,7 @@ public:
 
 	/* Simulation */
 	void calculateVelocity(float time);
-	
+
 	vec3 nearestBilerp(vec3 position);
 	void calculateAdvection();
 
@@ -41,6 +41,7 @@ public:
 	std::vector<dvec3> velocities;
 	std::vector<dvec3> old_velocities;
 	std::vector<float> pressures;
+	std::vector<float> old_pressures;
 
 	/*Simulation*/
 	//calculate advection func
