@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(FireSim)
 
-SET (CMAKE_CUDA_COMPILER $(CUDA_PATH))
-
 #Required Packages
 find_package(OpenGL REQUIRED)
 enable_language(CUDA)
