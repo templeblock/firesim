@@ -11,16 +11,16 @@ void Grid::init(int size, double timestep, double viscosity) {
 	timeStep = timestep;
 	viscosity = viscosity;
 	grid_size = size;
-	cell_size = 2.0 / (grid_size + 2.);
+	cell_size = 2.f / (grid_size + 2.f);
 
 	velocities = std::vector<dvec3>((grid_size+2) * (grid_size+2), dvec3(0.f, 0.f, 0.f));
 	//Randomly generate vector field
 	for (int j = 0; j < grid_size; j++) {
 		for (int i = 0; i < grid_size; i++) {
-			float random_x = rand() % 20;
-			float random_y = rand() % 20;
-			random_x = (random_x - 10) / 10;
-			random_y = (random_y - 10) / 10;
+			float random_x = (float) (rand() % 20);
+			float random_y = (float) (rand() % 20);
+			random_x = (random_x - 10.f) / 10.f;
+			random_y = (random_y - 10.f) / 10.f;
 			velocities[index(i,j)] = dvec3(random_x, random_y, 0.f);
 			if (length(velocities[index (i, j)]) != 0) {
 				velocities[index (i, j)] = normalize(velocities[index (i, j)]);
@@ -77,21 +77,21 @@ int Grid::index (int x, int y) {
 
 void Grid::calculateVelocity(float time) {
 	//Test function
-	for (int i = 0; i < velocities.size(); i++) {
+	for (unsigned int i = 0; i < velocities.size(); i++) {
 		velocities[i].x = sin(time);
 		velocities[i].y = cos(time);
 	}
 }
 
-vec3 lerp(float t, vec3 a, vec3 b) {
+dvec3 lerp(double t, dvec3 a, dvec3 b) {
 	return t * b + (1.f - t) * a;
 	//return a + ((b - a) * t);
 }
 
 vec3 Grid::nearestBilerp(vec3 position) {
 	// Find index of cell that holds position
-	int box_x = floor((position.x + 1.0)/cell_size) - 1;
-	int box_y = floor((position.y + 1.0)/cell_size) - 1;
+	int box_x = (int) floor((position.x + 1.0)/cell_size) - 1;
+	int box_y = (int) floor((position.y + 1.0)/cell_size) - 1;
 	box_x = clamp(box_x, 0, grid_size - 1);
 	box_y = clamp(box_y, 0, grid_size - 1);
 
@@ -168,8 +168,8 @@ void Grid::jacobiStepDiffuse(int i, int j) {
 
 void Grid::calculatePressure(int iterations) {
 	//TODO
-	for (int j = 0; j < pressures.size(); j++) {
-		for (int i = 0; i < pressures.size(); i++) {
+	for (unsigned int j = 0; j < pressures.size(); j++) {
+		for (unsigned int i = 0; i < pressures.size(); i++) {
 			int n = index(i, j);
 			float alpha = -pow(pressures[n] - old_pressures[n], 2);
 			float beta = 1./4.;

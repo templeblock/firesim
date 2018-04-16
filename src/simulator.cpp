@@ -6,7 +6,7 @@ using namespace glm;
 #include <iostream>
 
 #include "simulator.h"
-#include "camera.h"
+#include "test.h"
 
 void Simulator::init() {
 
@@ -30,7 +30,11 @@ void Simulator::init() {
 	bindVertices();
 
 	/*Set Perspective Matrix*/
-	changeScrDimensions(SCR_WIDTH, SCR_HEIGHT);
+	changeScrDimensions((int) SCR_WIDTH, (int)  SCR_HEIGHT);
+
+	/*Test CUDA*/
+	Test *test = new Test();
+	test->test();
 }
 
 void Simulator::moveCamera(vec3 moveBy) {
@@ -38,10 +42,10 @@ void Simulator::moveCamera(vec3 moveBy) {
 }
 
 void Simulator::changeScrDimensions(int width, int height) {
-	SCR_WIDTH = width;
-	SCR_HEIGHT = height;
+	SCR_WIDTH = (float) width;
+	SCR_HEIGHT = (float)height;
 
-	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+	glViewport(0, 0, (GLsizei) SCR_WIDTH, (GLsizei)SCR_HEIGHT);
 
 	//Projection matrix (Camera to screen)
 	glm::mat4 c2s;
@@ -203,7 +207,7 @@ void Simulator::drawGrid() {
 	//glDrawArrays(GL_POINTS, 0, grid->vertices->size() - 3); //Parameters: Primitive to draw, range of vertex array to draw
 	//glDrawArrays(GL_LINE_STRIP, 0, 3); //Parameters: Primitive to draw, range of vertex array to draw
 
-	for (int i = 0; i < gridVAO.size(); i++) {
+	for (unsigned int i = 0; i < gridVAO.size(); i++) {
 		glBindVertexArray(gridVAO[i]);
 		//GRID ONLY
 		gridShader->use();
@@ -221,7 +225,7 @@ void Simulator::drawArrows() {
 	gridShader->use();
 	glBindVertexArray(velocityVAO);
 
-	for (int i = 0; i < grid->centroid_vecs.size(); i++) {
+	for (unsigned int i = 0; i < grid->centroid_vecs.size(); i++) {
 		//Model matrix (CALCULATED PER OBJECT)
 		vec3 velocity = grid->velocities[i];
 		if (length(velocity) != 0) {

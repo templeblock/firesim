@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 project(FireSim)
 
+SET (CMAKE_CUDA_COMPILER $(CUDA_PATH))
+
 #Required Packages
 find_package(OpenGL REQUIRED)
+enable_language(CUDA)
 
 #GLFW
 add_subdirectory (ext/glfw-3.2.1)
@@ -21,10 +24,12 @@ set(OPENGL_LIBRARY
 )
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
-
 #Add executable
 add_executable(firesim
 	src/main.cpp
+
+	src/test.h
+	src/test.cu
 
 	src/grid.h
 	src/grid.cpp
