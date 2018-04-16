@@ -200,3 +200,18 @@ void Grid::calculateDivergence() {
 	}
 	divergences = newDiv;
 }
+
+void Grid::gradientSubtraction() {
+	std::vector<dvec3> newVel;
+	for (int j = 0; j < grid_size; ++j) {
+		for (int i = 0; i < grid_size; ++i) {
+			int n = index(i, j);
+			float L = pressures[n - 1];
+			float R = pressures[n + 1];
+			float T = pressures[index(i, j + 1)];
+			float B = pressures[index(i, j - 1)];
+			dvec3 v = velocities[n] - dvec3((R - L) / 2.0, (T - B) / 2.0, 0);
+			newVel.push_back(v);
+		}
+	}
+}

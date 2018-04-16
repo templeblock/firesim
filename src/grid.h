@@ -29,8 +29,9 @@ public:
 	void calculateDiffusion(int iterations);
 	void jacobiStepDiffuse(int i, int j);
 
-	void calculateDivergence();
 	void calculatePressure(int iterations);
+	void calculateDivergence();
+	void gradientSubtraction();
 
 	int grid_size;
 	float cell_size;
