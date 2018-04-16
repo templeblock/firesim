@@ -29,6 +29,7 @@ public:
 	void calculateDiffusion(int iterations);
 	void jacobiStepDiffuse(int i, int j);
 
+	void calculateDivergence();
 	void calculatePressure(int iterations);
 
 	int grid_size;
@@ -40,6 +41,7 @@ public:
 	double viscosity;
 	std::vector<dvec3> velocities;
 	std::vector<dvec3> old_velocities;
+	std::vector<float> divergences;
 	std::vector<float> pressures;
 	std::vector<float> old_pressures;
 

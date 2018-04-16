@@ -183,3 +183,20 @@ void Grid::calculatePressure(int iterations) {
 		}
 	}
 }
+
+void Grid::calculateDivergence() {
+	std::vector<float> newDiv; //new holder texture with divergences
+	for (int j = 0; j < grid_size; ++j) {
+		for (int i = 0; i < grid_size; ++i) {
+			int n = index(i, j);
+			vec3 L = velocities[n - 1];
+			vec3 R = velocities[n + 1];
+			vec3 T = velocities[index(i, j + 1)];
+			vec3 B = velocities[index(i, j - 1)];
+			float div = 0.5 * ((R.x - L.x) + (T.y - B.y));
+			//do we need to calculate 3D with the front and back coordinates too?
+			newDiv.push_back(div);
+		}
+	}
+	divergences = newDiv;
+}
