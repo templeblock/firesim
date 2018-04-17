@@ -28,8 +28,17 @@ void Grid::init(int size, double timestep, double viscosity) {
 		}
 	}
 
+	pressures = std::vector<float>((grid_size + 2) * (grid_size + 2), 0.0);
+	//Randomly generate pressure field
+	for (int j = 0; j < grid_size; j++) {
+		for (int i = 0; i < grid_size; i++) {
+			float random_x = rand() % 10;
+			random_x = random_x / 10.f;
+			pressures[index(i, j)] = random_x;
+		}
+	}
+
 	old_velocities = velocities;
-	pressures = std::vector<float>((grid_size+2) * (grid_size+2), 0.0);
 	old_pressures = pressures;
 
 	setVertices();
@@ -166,43 +175,50 @@ void Grid::jacobiStepDiffuse(int i, int j) {
 	velocities[n] = (L + R + B + T + alpha * self) * beta;
 }
 
-void Grid::calculatePressure(int iterations) {
-	//TODO
-	for (int j = 0; j < pressures.size(); j++) {
-		for (int i = 0; i < pressures.size(); i++) {
-			int n = index(i, j);
-			float alpha = -pow(pressures[n] - old_pressures[n], 2);
-			float beta = 1./4.;
-			float L = pressures[n - 1];
-			float R = pressures[n + 1];
-			float T = pressures[index(i, j+1)];
-			float B = pressures[index(i, j-1)];
-			float self = pressures[n];
-			old_pressures[n] = pressures[n];
-			pressures[n] = (L + R + B + T + alpha * self) * beta;
+void Grid::project(int iterations) {
+	//calculateDivergence();
+	divergences = std::vector<double>(old_pressures.size(), 0.f);
+	for (int j = 0; j < grid_size; j++) {
+		for (int i = 0; i < grid_size; i++) {
+			for (int n = 0; n < iterations; n++) {
+				jacobiStepPressure(i, j);
+			}
 		}
 	}
+	gradientSubtraction();
+}
+
+void Grid::jacobiStepPressure(int i, int j) {
+	int n = index(i, j);
+	float alpha = -pow(pressures[n] - old_pressures[n], 2);
+	float beta = 1. / 4.;
+	float L = pressures[n - 1];
+	float R = pressures[n + 1];
+	float T = pressures[index(i, j + 1)];
+	float B = pressures[index(i, j - 1)];
+	float b = divergences[n];
+	old_pressures[n] = pressures[n];
+	pressures[n] = (L + R + B + T + alpha * b) * beta;
 }
 
 void Grid::calculateDivergence() {
-	std::vector<float> newDiv; //new holder texture with divergences
+	divergences = std::vector<double> (velocities.size(), 0.); //new holder texture with divergences
 	for (int j = 0; j < grid_size; ++j) {
 		for (int i = 0; i < grid_size; ++i) {
 			int n = index(i, j);
-			vec3 L = velocities[n - 1];
-			vec3 R = velocities[n + 1];
-			vec3 T = velocities[index(i, j + 1)];
-			vec3 B = velocities[index(i, j - 1)];
-			float div = 0.5 * ((R.x - L.x) + (T.y - B.y));
+			dvec3 L = velocities[n - 1];
+			dvec3 R = velocities[n + 1];
+			dvec3 T = velocities[index(i, j + 1)];
+			dvec3 B = velocities[index(i, j - 1)];
+			double div = ((R.x - L.x) + (T.y - B.y))/2.;
 			//do we need to calculate 3D with the front and back coordinates too?
-			newDiv.push_back(div);
+			divergences[n] = div;
 		}
 	}
-	divergences = newDiv;
 }
 
 void Grid::gradientSubtraction() {
-	std::vector<dvec3> newVel;
+	//std::vector<dvec3> newVel;
 	for (int j = 0; j < grid_size; ++j) {
 		for (int i = 0; i < grid_size; ++i) {
 			int n = index(i, j);
@@ -210,8 +226,22 @@ void Grid::gradientSubtraction() {
 			float R = pressures[n + 1];
 			float T = pressures[index(i, j + 1)];
 			float B = pressures[index(i, j - 1)];
-			dvec3 v = velocities[n] - dvec3((R - L) / 2.0, (T - B) / 2.0, 0);
-			newVel.push_back(v);
+			dvec3 v = velocities[n] - (dvec3((R - L) / 2.0, (T - B) / 2.0, 0.) * .5);
+			velocities[n] = v;
+			//newVel.push_back(v);
 		}
+	}
+}
+
+void Grid::boundaryConditions() {
+	//Bottom and Top Border
+	for (int i = 0; i < grid_size + 2; i++) {
+		pressures[i] = pressures[grid_size + 2 + i];
+		pressures[(grid_size + 1)*(grid_size + 2) + i] = pressures[grid_size*(grid_size + 2) + i];
+	}
+	//Side Borders
+	for (int j = 1; j < grid_size + 1; j++) {
+		pressures[j*(grid_size + 2)] = pressures[j * (grid_size + 2) + 1];
+		pressures[j*(grid_size + 2) + (grid_size + 1)] = pressures[j*(grid_size + 2) + grid_size];
 	}
 }

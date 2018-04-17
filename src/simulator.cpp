@@ -12,7 +12,7 @@ void Simulator::init() {
 
 	/* Create new grid */
 	grid = new Grid();
-	grid->init(120, 0.05, 2);
+	grid->init(100, 0.1, 2);
 
 	/* Create Camera and Set Projection Matrix */
 	CAMERA = new Camera();
@@ -155,6 +155,8 @@ void Simulator::bindVertexSet(unsigned int index, unsigned int size, const std::
 void Simulator::simulate(float time) {
 	grid->calculateAdvection();
 	grid->calculateDiffusion(2);
+	grid->project(2);
+	grid->boundaryConditions();
 	drawContents();
 }
 
@@ -209,7 +211,9 @@ void Simulator::drawGrid() {
 		gridShader->use();
 		glDrawArrays(GL_LINE_LOOP, 1, 4);
 		//CELL BGS
+		float red = grid->pressures[i] * .5f + .5f;
 		cellShader->use();
+		cellShader->setVec4("color", vec4(red, .3f, .3f, 1.f));
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 	}
