@@ -150,13 +150,13 @@ void Grid::bindScreenVertices() {
 
 /* GPU SIMULATION */
 void Grid::stepOnce() {
-	/*Bind screen coords*/
+	/* Setup */
+	glViewport(0, 0, grid_size + 2, grid_size + 2);
 	glBindVertexArray(VAO);
 
 	/* Advect */
 	glBindFramebuffer(GL_FRAMEBUFFER, advectionOutputFBO);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glViewport(0, 0, grid_size + 2, grid_size + 2);
 	advectShader->use();
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, velocityInputTex);
