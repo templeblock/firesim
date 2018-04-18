@@ -35,6 +35,9 @@ add_executable(firesim
 	src/simulator.h
 	src/simulator.cpp
 
+	src/framebuffer.h
+	src/framebuffer.cpp
+
 	src/shader.h
 	ext/glad/src/glad.c
 )

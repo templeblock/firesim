@@ -6,6 +6,7 @@
 #include "camera.h"
 #include "shader.h"
 #include "grid.h"
+#include "framebuffer.h"
 
 class Simulator {
 	
@@ -16,6 +17,14 @@ public:
 		SCR_WIDTH = width;
 	}
 
+	enum RenderType {
+		VELOCITY,
+		PRESSURE,
+		DIVERGENCE,
+		INK
+	};
+	RenderType current;
+
 	/* Setup */
 	void init();
 	void bindVertices();
@@ -25,6 +34,7 @@ public:
 	void simulate(float time);
 
 	void drawContents();
+	void drawTexture();
 	void drawGrid();
 	void drawArrows();
 
@@ -32,15 +42,29 @@ public:
 	void moveCamera(vec3 moveBy);
 	void changeScrDimensions(int width, int height);
 
+	void generateTextures();
+
+	void updateVelocityTexture(bool normalized);
+
+	void updatePressureTexture();
+
+	void updateDivergenceTexture();
+
 private:
+	
+	bool normalized_renders;
+	Framebuffer *FBO;
+
 	std::vector<GLuint> gridVBO;
 	std::vector<GLuint> gridVAO;
 
-	//std::vector<GLuint> *velocityVBO;
-	//std::vector<GLuint> *velocityVAO;
-
 	GLuint velocityVBO;
 	GLuint velocityVAO;
+
+	GLuint screenVBO;
+	GLuint screenVAO;
+
+	GLuint currentTex;
 
 	Camera *CAMERA;
 	Shader *gridShader;

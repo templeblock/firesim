@@ -66,7 +66,7 @@ int main(void) {
 	/* Initialize Simulation */
 	/*************************/
 
-	simulation = new Simulator(SCR_WIDTH, SCR_HEIGHT);
+	simulation = new Simulator((float) SCR_WIDTH, (float)SCR_HEIGHT);
 	simulation->init();
 
 	/***************/
@@ -76,7 +76,7 @@ int main(void) {
 
 	while (!glfwWindowShouldClose(window)) {
 
-		float currentFrame = glfwGetTime();
+		float currentFrame = (float) glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 		frame++;
@@ -85,9 +85,9 @@ int main(void) {
 		processInput(window);
 
 		/** Render **/
-		if (frame % 5 == 0) {
+		//if (frame % 5 == 0) {
 			simulation->simulate(deltaTime);
-		}
+		//}
 
 		/**Swap buffers & poll IO events**/
 		glfwSwapBuffers(window);

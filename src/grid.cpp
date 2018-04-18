@@ -86,7 +86,7 @@ int Grid::index (int x, int y) {
 
 void Grid::calculateVelocity(float time) {
 	//Test function
-	for (int i = 0; i < velocities.size(); i++) {
+	for (unsigned int i = 0; i < velocities.size(); i++) {
 		velocities[i].x = sin(time);
 		velocities[i].y = cos(time);
 	}
@@ -176,8 +176,8 @@ void Grid::jacobiStepDiffuse(int i, int j) {
 }
 
 void Grid::project(int iterations) {
-	//calculateDivergence();
-	divergences = std::vector<double>(old_pressures.size(), 0.f);
+	calculateDivergence();
+	//pressures = std::vector<float>(old_pressures.size(), 0.f);
 	for (int j = 0; j < grid_size; j++) {
 		for (int i = 0; i < grid_size; i++) {
 			for (int n = 0; n < iterations; n++) {
@@ -192,11 +192,11 @@ void Grid::jacobiStepPressure(int i, int j) {
 	int n = index(i, j);
 	float alpha = -pow(pressures[n] - old_pressures[n], 2);
 	float beta = 1. / 4.;
-	float L = pressures[n - 1];
-	float R = pressures[n + 1];
-	float T = pressures[index(i, j + 1)];
-	float B = pressures[index(i, j - 1)];
-	float b = divergences[n];
+	float L = (float) pressures[n - 1];
+	float R = (float) pressures[n + 1];
+	float T = (float) pressures[index(i, j + 1)];
+	float B = (float) pressures[index(i, j - 1)];
+	float b = (float) divergences[n];
 	old_pressures[n] = pressures[n];
 	pressures[n] = (L + R + B + T + alpha * b) * beta;
 }
