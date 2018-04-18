@@ -7,5 +7,5 @@ out vec4 FragColor;
 
 void main()
 {
-	FragColor = texture(inVelocity, Tex);
+	FragColor = texture(input, Tex);
 }

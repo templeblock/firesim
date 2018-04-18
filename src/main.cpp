@@ -85,9 +85,9 @@ int main(void) {
 		processInput(window);
 
 		/** Render **/
-		if (frame % 10 == 0) {
+		//if (frame % 10 == 0) {
 			simulation->simulate(deltaTime);
-		}
+		//}
 
 		/**Swap buffers & poll IO events**/
 		glfwSwapBuffers(window);

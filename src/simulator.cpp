@@ -12,7 +12,7 @@ void Simulator::init() {
 
 	/* Create new grid */
 	grid = new Grid();
-	grid->init(100, 0.1, 2);
+	grid->init(200, 0.01, 1);
 	GPUsim = true;
 	normalized_renders = true;
 	current = VELOCITY;
@@ -27,7 +27,6 @@ void Simulator::init() {
 
 	/*Misc*/
 	glEnable(GL_DEPTH_TEST);
-	//glPointSize(3.f);
 
 	/*Bind VBO, VAO*/
 	//bindVertices();
@@ -63,12 +62,12 @@ void Simulator::bindScreenVertices() {
 	/* SCREEN VERTICES */
 	float screen[] = {
 		//Vertices       //Tex Coords
-		0.f, 0.f, 0.f,    0.f, 0.f,
-		0.f, 1.f, 0.f,    0.f, 1.f,
+		-1.f, -1.f, 0.f,    0.f, 0.f,
+		-1.f, 1.f, 0.f,    0.f, 1.f,
 		1.f, 1.f, 0.f,    1.f, 1.f,
 
-		0.f, 0.f, 0.f,    0.f, 0.f,
-		1.f, 0.f, 0.f,    1.f, 0.f,
+		-1.f, -1.f, 0.f,    0.f, 0.f,
+		1.f, -1.f, 0.f,    1.f, 0.f,
 		1.f, 1.f, 0.f,    1.f, 1.f,
 	};
 

@@ -63,11 +63,12 @@ public:
 
 private:
 	Framebuffer *FBO;
-	Shader *defaultShader, *advectShader;
+	Shader *defaultShader, *bVelShader;
+	Shader *advectShader, *diffuseShader;
 
-	GLuint VBO, VAO;
-	GLuint velocityInputFBO, advectionOutputFBO;
-	GLuint velocityInputTex, advectionOutputTex;
+	GLuint VBO, VAO, bVBO, bVAO;
+	GLuint velocityInputFBO, advectionOutputFBO, diffusionOutputFBO;
+	GLuint velocityInputTex, advectionOutputTex, diffusionOutputTex;
 	//who the fuck
 
 };

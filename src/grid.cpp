@@ -11,7 +11,7 @@ void Grid::init(int size, double timestep, double viscosity) {
 	timeStep = timestep;
 	viscosity = viscosity;
 	grid_size = size;
-	cell_size = 1.0 / (grid_size + 2.);
+	cell_size = 2.0 / (grid_size + 2.);
 
 	velocities = std::vector<dvec3>((grid_size+2) * (grid_size+2), dvec3(0.f, 0.f, 0.f));
 	//Randomly generate vector field
@@ -69,10 +69,11 @@ void Grid::init(int size, double timestep, double viscosity) {
 	advectionOutputTex = FBO->createTexture(grid_size + 2, &fbo_vel[0]);
 	advectionOutputFBO = FBO->createFBO(advectionOutputTex);
 
-	renderToScreen = advectionOutputTex;
+	renderToScreen = velocityInputTex;
 
 	/* Shaders */
 	defaultShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/defaultShader.frag");
+	bVelShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/velocityBorderShader.frag");
 	advectShader = new Shader("../src/shaders/advectShader.vert", "../src/shaders/advectShader.frag");
 }
 
@@ -84,9 +85,9 @@ void Grid::setVertices() {
 	vertices = std::vector<vec3> (0);
 	vertices.reserve((grid_size+3) * (grid_size+3));
 	double inc = cell_size;
-	double current_height = 0.f;
+	double current_height = -1.f;
 	for (int j = 0; j <= grid_size+2; j++) {
-		double current_width = 0.f;
+		double current_width = -1.f;
 		for (int i = 0; i <= grid_size+2; i++) {
 			vertices.push_back(vec3(current_width, current_height, 0.0f));
 			current_width += inc;
@@ -100,7 +101,7 @@ void Grid::setCentroids() {
 	double inc = cell_size;
 	for (int j = 0; j < grid_size+2; j++) {
 		for (int i = 0; i < grid_size+2; i++) {
-			centroid_vecs[j*(grid_size+2) + i] = vec3((i + 0.5) * inc, (j + 0.5) * inc, 0.f);
+			centroid_vecs[j*(grid_size+2) + i] = vec3((i + 0.5) * inc - 1.f, (j + 0.5) * inc - 1.f, 0.f);
 		}
 	}
 }
@@ -138,6 +139,38 @@ void Grid::bindScreenVertices() {
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)(sizeof(float) * 3));
 	glEnableVertexAttribArray(1);
 
+	/* Boundary Vertices */
+	float border[] = {
+		//Vertices       //Tex Coords
+		-1.f, -1.f, 0.f,    0.f, 0.f,
+		-1.f,  1.f, 0.f,    0.f, 1.f,
+
+		-1.f,  1.f, 0.f,    0.f, 1.f,
+		 1.f,  1.f, 0.f,    1.f, 1.f,
+
+		 1.f,  1.f, 0.f,    1.f, 1.f,
+		 1.f, -1.f, 0.f,    1.f, 0.f,
+
+		 1.f, -1.f, 0.f,    1.f, 0.f,
+		-1.f, -1.f, 0.f,    0.f, 0.f,
+	};
+
+	glGenBuffers(1, &bVBO);
+	glGenVertexArrays(1, &bVAO);
+
+	/* Bind VBO and set VBO data */
+	glBindBuffer(GL_ARRAY_BUFFER, bVBO);
+	glBufferData(GL_ARRAY_BUFFER, 4 * 5 * sizeof(float), screen, GL_STATIC_DRAW);
+
+	/* Bind VAO and set VAO configuration */
+	glBindVertexArray(bVAO);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)(sizeof(float) * 3));
+	glEnableVertexAttribArray(1);
+
+
 	/* Unbind */
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
@@ -160,7 +193,7 @@ void Grid::stepOnce() {
 	advectShader->use();
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, velocityInputTex);
-	advectShader->setFloat("cellSize", cell_size);
+	advectShader->setFloat("cellSize", 1./(grid_size+2));
 	advectShader->setFloat("timeStep", timeStep);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -171,6 +204,11 @@ void Grid::stepOnce() {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, advectionOutputTex);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	/* Write Velocity Boundary */
+	bVelShader->use();
+	glBindVertexArray(bVAO);
+	glDrawArrays(GL_LINE, 0, 8);
 
 	/* Unbind */
 	glBindVertexArray(0);
