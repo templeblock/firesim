@@ -11,7 +11,7 @@ void Grid::init(int size, double timestep, double viscosity) {
 	timeStep = timestep;
 	viscosity = viscosity;
 	grid_size = size;
-	cell_size = 2.0 / (grid_size + 2.);
+	cell_size = 1.0 / (grid_size + 2.);
 
 	velocities = std::vector<dvec3>((grid_size+2) * (grid_size+2), dvec3(0.f, 0.f, 0.f));
 	//Randomly generate vector field
@@ -43,20 +43,50 @@ void Grid::init(int size, double timestep, double viscosity) {
 
 	setVertices();
 	setCentroids();
+
+	/******************************/
+	/* GPU Process Initialization */
+	/******************************/
+
+	bindScreenVertices();
+
+	/* FBO, Texture Setup */
+	FBO = new Framebuffer();
+	std::vector<float> fbo_vel = std::vector<float>(0);
+	for (unsigned int i = 0; i < velocities.size(); i++) {
+		vec3 velocity = velocities[i];
+		if (length(velocity) != 0) {
+			velocity = normalize(velocity);
+		}
+		fbo_vel.push_back((float)(velocity.x + 1.f) / 2.);
+		fbo_vel.push_back((float)(velocity.y + 1.f) / 2.);
+		fbo_vel.push_back((float)(velocity.z + 1.f) / 2.);
+	}
+
+	velocityInputTex = FBO->createTexture(grid_size + 2, &fbo_vel[0]);
+	velocityInputFBO = FBO->createFBO(velocityInputTex);
+
+	advectionOutputTex = FBO->createTexture(grid_size + 2, &fbo_vel[0]);
+	advectionOutputFBO = FBO->createFBO(advectionOutputTex);
+
+	renderToScreen = advectionOutputTex;
+
+	/* Shaders */
+	defaultShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/defaultShader.frag");
+	advectShader = new Shader("../src/shaders/advectShader.vert", "../src/shaders/advectShader.frag");
 }
 
 /******************************/
 /* INIT, COORDINATES, VISUALS */
 /******************************/
-
 void Grid::setVertices() {
 	/*Grid contains 1-cell border of 0-values on all sides*/
 	vertices = std::vector<vec3> (0);
 	vertices.reserve((grid_size+3) * (grid_size+3));
 	double inc = cell_size;
-	double current_height = -1.f;
+	double current_height = 0.f;
 	for (int j = 0; j <= grid_size+2; j++) {
-		double current_width = -1.f;
+		double current_width = 0.f;
 		for (int i = 0; i <= grid_size+2; i++) {
 			vertices.push_back(vec3(current_width, current_height, 0.0f));
 			current_width += inc;
@@ -64,14 +94,13 @@ void Grid::setVertices() {
 		current_height += inc;
 	}
 }
-
 void Grid::setCentroids() {
 	/*Grid contains 1-cell border of 0-values on all sides*/
 	centroid_vecs = std::vector<vec3> ((grid_size+2) * (grid_size+2), vec3(0.f));
 	double inc = cell_size;
 	for (int j = 0; j < grid_size+2; j++) {
 		for (int i = 0; i < grid_size+2; i++) {
-			centroid_vecs[j*(grid_size+2) + i] = vec3((i + 0.5) * inc - 1.0, (j + 0.5) * inc - 1.0, 0.f);
+			centroid_vecs[j*(grid_size+2) + i] = vec3((i + 0.5) * inc, (j + 0.5) * inc, 0.f);
 		}
 	}
 }
@@ -80,10 +109,76 @@ int Grid::index (int x, int y) {
 	return (y + 1)*(grid_size + 2) + x + 1;
 }
 
+void Grid::bindScreenVertices() {
+
+	/* SCREEN VERTICES */
+	float screen[] = {
+		//Vertices       //Tex Coords
+		-1.f, -1.f, 0.f,    0.f, 0.f,
+		-1.f,  1.f, 0.f,    0.f, 1.f,
+		 1.f,  1.f, 0.f,    1.f, 1.f,
+
+		-1.f, -1.f, 0.f,    0.f, 0.f,
+		 1.f, -1.f, 0.f,    1.f, 0.f,
+		 1.f,  1.f, 0.f,    1.f, 1.f,
+	};
+
+	glGenBuffers(1, &VBO);
+	glGenVertexArrays(1, &VAO);
+
+	/* Bind VBO and set VBO data */
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, 6 * 5 * sizeof(float), screen, GL_STATIC_DRAW);
+
+	/* Bind VAO and set VAO configuration */
+	glBindVertexArray(VAO);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)(sizeof(float) * 3));
+	glEnableVertexAttribArray(1);
+
+	/* Unbind */
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+}
+
+
 /**************/
 /* Simulation */
 /**************/
 
+/* GPU SIMULATION */
+void Grid::stepOnce() {
+	/*Bind screen coords*/
+	glBindVertexArray(VAO);
+
+	/* Advect */
+	glBindFramebuffer(GL_FRAMEBUFFER, advectionOutputFBO);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glViewport(0, 0, grid_size + 2, grid_size + 2);
+	advectShader->use();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, velocityInputTex);
+	advectShader->setFloat("cellSize", cell_size);
+	advectShader->setFloat("timeStep", timeStep);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	/* Write to Velocity Texture */
+	glBindFramebuffer(GL_FRAMEBUFFER, velocityInputFBO);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	defaultShader->use();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, advectionOutputTex);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	/* Unbind */
+	glBindVertexArray(0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+/* CPU COMPUTATIONS */
 void Grid::calculateVelocity(float time) {
 	//Test function
 	for (unsigned int i = 0; i < velocities.size(); i++) {
@@ -91,12 +186,10 @@ void Grid::calculateVelocity(float time) {
 		velocities[i].y = cos(time);
 	}
 }
-
 vec3 lerp(float t, vec3 a, vec3 b) {
 	return t * b + (1.f - t) * a;
 	//return a + ((b - a) * t);
 }
-
 vec3 Grid::nearestBilerp(vec3 position) {
 	// Find index of cell that holds position
 	int box_x = floor((position.x + 1.0)/cell_size) - 1;
@@ -137,7 +230,6 @@ vec3 Grid::nearestBilerp(vec3 position) {
 	dvec3 vertical = lerp(t_y, second_ho, first_ho);
 	return vertical;
 }
-
 void Grid::calculateAdvection() {
 	old_velocities = velocities;
 	for (int j = 0; j < grid_size; ++j) {
@@ -150,7 +242,6 @@ void Grid::calculateAdvection() {
 		}
 	}
 }
-
 void Grid::calculateDiffusion(int iterations) {
 	for (int j = 0; j < grid_size; j++) {
 		for (int i = 0; i < grid_size; i++) {
@@ -160,7 +251,6 @@ void Grid::calculateDiffusion(int iterations) {
 		}
 	}
 }
-
 void Grid::jacobiStepDiffuse(int i, int j) {
 	//TODO
 	int n = index(i, j);
@@ -174,7 +264,6 @@ void Grid::jacobiStepDiffuse(int i, int j) {
 	old_velocities[n] = velocities[n];
 	velocities[n] = (L + R + B + T + alpha * self) * beta;
 }
-
 void Grid::project(int iterations) {
 	calculateDivergence();
 	//pressures = std::vector<float>(old_pressures.size(), 0.f);
@@ -187,7 +276,6 @@ void Grid::project(int iterations) {
 	}
 	gradientSubtraction();
 }
-
 void Grid::jacobiStepPressure(int i, int j) {
 	int n = index(i, j);
 	float alpha = -pow(pressures[n] - old_pressures[n], 2);
@@ -200,7 +288,6 @@ void Grid::jacobiStepPressure(int i, int j) {
 	old_pressures[n] = pressures[n];
 	pressures[n] = (L + R + B + T + alpha * b) * beta;
 }
-
 void Grid::calculateDivergence() {
 	divergences = std::vector<double> (velocities.size(), 0.); //new holder texture with divergences
 	for (int j = 0; j < grid_size; ++j) {
@@ -216,7 +303,6 @@ void Grid::calculateDivergence() {
 		}
 	}
 }
-
 void Grid::gradientSubtraction() {
 	//std::vector<dvec3> newVel;
 	for (int j = 0; j < grid_size; ++j) {
@@ -232,7 +318,6 @@ void Grid::gradientSubtraction() {
 		}
 	}
 }
-
 void Grid::boundaryConditions() {
 	//Bottom and Top Border
 	for (int i = 0; i < grid_size + 2; i++) {

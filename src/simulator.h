@@ -24,6 +24,7 @@ public:
 		INK
 	};
 	RenderType current;
+	bool GPUsim;
 
 	/* Setup */
 	void init();
@@ -41,6 +42,8 @@ public:
 	/* Interaction */
 	void moveCamera(vec3 moveBy);
 	void changeScrDimensions(int width, int height);
+
+	void bindScreenVertices();
 
 	void generateTextures();
 

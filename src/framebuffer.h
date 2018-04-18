@@ -8,20 +8,21 @@ class Framebuffer {
 public:
 
 	Framebuffer () {
-		VEL_TEX = std::vector<GLuint>(0);
+		FBO = std::vector<GLuint>(0);
+		TEX = std::vector<GLuint>(0);
 	}
 
-	void createFBO();
+	GLuint createFBO(int texID);
 
-	void createEmptyTexture(int size);
-	void createTexture(int size, float *data);
+	GLuint createEmptyTexture(int size);
+	GLuint createTexture(int size, float *data);
 
 	void changeTextureImage(int size, GLuint ID, float * data);
 
 	void getErrors();
 
-	std::vector<GLuint> VEL_FBO;
-	std::vector<GLuint> VEL_TEX;
+	std::vector<GLuint> FBO;
+	std::vector<GLuint> TEX;
 };
 
 #endif FRAMEBUFFER_H

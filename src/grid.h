@@ -1,10 +1,11 @@
 #ifndef GRID_H
 #define GRID_H
 #include <vector>
-
-#include <vector>
 #include <glm/glm.hpp>
 using namespace glm;
+
+#include "framebuffer.h"
+#include "shader.h"
 
 class Grid {
 
@@ -19,6 +20,10 @@ public:
 	void setCentroids();
 
 	int index (int x, int j);
+
+	void bindScreenVertices();
+
+	void stepOnce();
 
 	/* Simulation */
 	void calculateVelocity(float time);
@@ -36,37 +41,33 @@ public:
 
 	void boundaryConditions();
 
+	/* Simulation Settings */
 	int grid_size;
 	float cell_size;
+	double timeStep;
+	/* Fluid Settings */
+	double viscosity;
+
+	/* Simulation Data */
+	GLuint renderToScreen;
+
+	/* CPU Computation Data */
 	std::vector<vec3> vertices;
 	std::vector<vec3> centroid_vecs;
 
-	double timeStep;
-	double viscosity;
 	std::vector<dvec3> velocities;
 	std::vector<dvec3> old_velocities;
 	std::vector<double> divergences;
 	std::vector<float> pressures;
 	std::vector<float> old_pressures;
 
-	/*Simulation*/
-	//calculate advection func
-	//calculate pressure func
-	//calculate diffusion func
-	//calculate external forces func
-	//write to pixel buffer func (ink)
-
-	/*Fluid Property Constants*/
-	//Density Constant
-	//Viscosity Constant
-
-	/*Simulation State Variables*/
-	//Velocity Texture
-	//Pressure Texture
-	//Pixel Buffer Array Texture
-
 private:
+	Framebuffer *FBO;
+	Shader *defaultShader, *advectShader;
 
+	GLuint VBO, VAO;
+	GLuint velocityInputFBO, advectionOutputFBO;
+	GLuint velocityInputTex, advectionOutputTex;
 	//who the fuck
 
 };
