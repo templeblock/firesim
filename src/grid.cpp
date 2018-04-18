@@ -186,10 +186,12 @@ void Grid::calculateVelocity(float time) {
 		velocities[i].y = cos(time);
 	}
 }
+
 vec3 lerp(float t, vec3 a, vec3 b) {
 	return t * b + (1.f - t) * a;
 	//return a + ((b - a) * t);
 }
+
 vec3 Grid::nearestBilerp(vec3 position) {
 	// Find index of cell that holds position
 	int box_x = floor((position.x + 1.0)/cell_size) - 1;
@@ -230,6 +232,7 @@ vec3 Grid::nearestBilerp(vec3 position) {
 	dvec3 vertical = lerp(t_y, second_ho, first_ho);
 	return vertical;
 }
+
 void Grid::calculateAdvection() {
 	old_velocities = velocities;
 	for (int j = 0; j < grid_size; ++j) {
@@ -242,15 +245,7 @@ void Grid::calculateAdvection() {
 		}
 	}
 }
-void Grid::calculateDiffusion(int iterations) {
-	for (int j = 0; j < grid_size; j++) {
-		for (int i = 0; i < grid_size; i++) {
-			for (int n = 0; n < iterations; n++) {
-				jacobiStepDiffuse(i, j);
-			}
-		}
-	}
-}
+
 void Grid::jacobiStepDiffuse(int i, int j) {
 	//TODO
 	int n = index(i, j);
@@ -264,30 +259,17 @@ void Grid::jacobiStepDiffuse(int i, int j) {
 	old_velocities[n] = velocities[n];
 	velocities[n] = (L + R + B + T + alpha * self) * beta;
 }
-void Grid::project(int iterations) {
-	calculateDivergence();
-	//pressures = std::vector<float>(old_pressures.size(), 0.f);
+
+void Grid::calculateDiffusion(int iterations) {
 	for (int j = 0; j < grid_size; j++) {
 		for (int i = 0; i < grid_size; i++) {
 			for (int n = 0; n < iterations; n++) {
-				jacobiStepPressure(i, j);
+				jacobiStepDiffuse(i, j);
 			}
 		}
 	}
-	gradientSubtraction();
 }
-void Grid::jacobiStepPressure(int i, int j) {
-	int n = index(i, j);
-	float alpha = -pow(pressures[n] - old_pressures[n], 2);
-	float beta = 1. / 4.;
-	float L = (float) pressures[n - 1];
-	float R = (float) pressures[n + 1];
-	float T = (float) pressures[index(i, j + 1)];
-	float B = (float) pressures[index(i, j - 1)];
-	float b = (float) divergences[n];
-	old_pressures[n] = pressures[n];
-	pressures[n] = (L + R + B + T + alpha * b) * beta;
-}
+
 void Grid::calculateDivergence() {
 	divergences = std::vector<double> (velocities.size(), 0.); //new holder texture with divergences
 	for (int j = 0; j < grid_size; ++j) {
@@ -303,6 +285,20 @@ void Grid::calculateDivergence() {
 		}
 	}
 }
+
+void Grid::jacobiStepPressure(int i, int j) {
+	int n = index(i, j);
+	float alpha = -pow(pressures[n] - old_pressures[n], 2);
+	float beta = 1. / 4.;
+	float L = pressures[n - 1];
+	float R = pressures[n + 1];
+	float T = pressures[index(i, j + 1)];
+	float B = pressures[index(i, j - 1)];
+	float b = divergences[n];
+	old_pressures[n] = pressures[n];
+	pressures[n] = (L + R + B + T + alpha * b) * beta;
+}
+
 void Grid::gradientSubtraction() {
 	//std::vector<dvec3> newVel;
 	for (int j = 0; j < grid_size; ++j) {
@@ -318,6 +314,20 @@ void Grid::gradientSubtraction() {
 		}
 	}
 }
+
+void Grid::project(int iterations) {
+	//calculateDivergence();
+	divergences = std::vector<double>(old_pressures.size(), 0.f);
+	for (int j = 0; j < grid_size; j++) {
+		for (int i = 0; i < grid_size; i++) {
+			for (int n = 0; n < iterations; n++) {
+				jacobiStepPressure(i, j);
+			}
+		}
+	}
+	gradientSubtraction();
+}
+
 void Grid::boundaryConditions() {
 	//Bottom and Top Border
 	for (int i = 0; i < grid_size + 2; i++) {
