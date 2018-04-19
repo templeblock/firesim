@@ -64,7 +64,7 @@ public:
 private:
 	Framebuffer *FBO;
 	Shader *defaultShader, *bVelShader;
-	Shader *advectShader, *diffuseShader;
+	Shader *advectShader, *diffuseShader, *divergeShader, *pressureShader, *gradientShader;
 
 	GLuint VBO, VAO, bVBO, bVAO;
 
