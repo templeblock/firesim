@@ -12,7 +12,7 @@ void Simulator::init() {
 
 	/* Create new grid */
 	grid = new Grid();
-	grid->init(1000, 0.05, 1);
+	grid->init(1000, 0.01, 1);
 	GPUsim = true;
 	normalized_renders = true;
 	current = VELOCITY;
@@ -93,7 +93,7 @@ void Simulator::bindScreenVertices() {
 
 void Simulator::simulate(float time) {
 	if (GPUsim) {
-		grid->stepOnce();
+		grid->stepOnce(20);
 	}
 	else {
 		grid->calculateAdvection();

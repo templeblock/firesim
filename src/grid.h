@@ -23,7 +23,7 @@ public:
 
 	void bindScreenVertices();
 
-	void stepOnce();
+	void stepOnce(int iterations);
 
 	/* Simulation */
 	void calculateVelocity(float time);
@@ -67,11 +67,16 @@ private:
 	Shader *advectShader, *diffuseShader;
 
 	GLuint VBO, VAO, bVBO, bVAO;
+
+	//Vector value textures - RGB correspond to XYZ
 	GLuint velocityInputFBO, advectionOutputFBO, diffusionOutputFBO;
 	GLuint velocityInputTex, advectionOutputTex, diffusionOutputTex;
-	GLuint bufferFBO, bufferTex;
-	//who the fuck
 
+	//Scalar textures - RG correspond to divergence, pressure
+	GLuint scalarsOutputFBO, scalarsOutputTex;
+
+	//Buffer textures for extra R/W
+	GLuint bufferFBO, bufferTex, buffer2FBO, buffer2Tex;
 };
 
 #endif

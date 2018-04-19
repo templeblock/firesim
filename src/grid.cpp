@@ -189,7 +189,11 @@ void Grid::bindScreenVertices() {
 /**************/
 
 /* GPU SIMULATION */
-void Grid::stepOnce() {
+void Grid::stepOnce(int iterations) {
+
+	// Note: ALL CELL SIZES ARE WRITTEN IN GL SPACE (-1 to 1)
+	// Multiply by .5 in shaders to convert to texture space
+
 	/* Setup */
 	glViewport(0, 0, grid_size + 2, grid_size + 2);
 	glBindVertexArray(VAO);
@@ -200,7 +204,7 @@ void Grid::stepOnce() {
 	advectShader->use();
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, velocityInputTex);
-	advectShader->setFloat("cellSize", 1./(grid_size+2));
+	advectShader->setFloat("cellSize", cell_size);
 	advectShader->setFloat("timeStep", timeStep);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -219,9 +223,8 @@ void Grid::stepOnce() {
 
 	/* Diffusion Loop */
 	diffuseShader->use();
-	diffuseShader->setFloat("cellSize", 1. / (grid_size + 2));
+	diffuseShader->setFloat("cellSize", cell_size);
 	diffuseShader->setFloat("timeStep", timeStep);
-
 	for (int i = 0; i < 10; i++) {
 		/* Velocity -> Diffusion FBO */
 		glBindVertexArray(VAO);
@@ -278,6 +281,8 @@ void Grid::stepOnce() {
 		glBindTexture(GL_TEXTURE_2D, diffusionOutputFBO);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
+
+	/**/
 
 	/* Unbind */
 	glBindVertexArray(0);
