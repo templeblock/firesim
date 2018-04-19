@@ -221,8 +221,30 @@ void Grid::stepOnce() {
 	diffuseShader->use();
 	diffuseShader->setFloat("cellSize", 1. / (grid_size + 2));
 	diffuseShader->setFloat("timeStep", timeStep);
+
 	for (int i = 0; i < 10; i++) {
-		/* Copy Old to Buffer */
+		/* Velocity -> Diffusion FBO */
+		glBindVertexArray(VAO);
+		diffuseShader->use();
+		glBindFramebuffer(GL_FRAMEBUFFER, diffusionOutputFBO);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, velocityInputTex);
+		glActiveTexture(GL_TEXTURE1);
+		if (i == 0) {
+			glBindTexture(GL_TEXTURE_2D, velocityInputTex);
+		} else {
+			glBindTexture(GL_TEXTURE_2D, bufferTex);
+		}
+		diffuseShader->setInt("dXdT", 1);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		/* Write Velocity Boundary */
+		glBindVertexArray(bVAO);
+		bVelShader->use();
+		glDrawArrays(GL_LINE, 0, 8);
+
+		/* Copy Old Velocity to Buffer */
 		glBindVertexArray(VAO);
 		defaultShader->use();
 		glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
@@ -231,31 +253,30 @@ void Grid::stepOnce() {
 		glBindTexture(GL_TEXTURE_2D, velocityInputTex);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
-		/* Velocity -> Diffusion FBO */
-		diffuseShader->use();
-		glBindFramebuffer(GL_FRAMEBUFFER, diffusionOutputFBO);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, velocityInputTex);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		/* Write Velocity Boundary */
-		bVelShader->use();
-		glBindVertexArray(bVAO);
-		glDrawArrays(GL_LINE, 0, 8);
-
 		/* Diffusion -> Velocity FBO */
 		diffuseShader->use();
 		glBindFramebuffer(GL_FRAMEBUFFER, velocityInputFBO);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffusionOutputTex);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, bufferTex);
+		diffuseShader->setInt("dXdT", 1);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		/* Write Velocity Boundary */
 		bVelShader->use();
 		glBindVertexArray(bVAO);
 		glDrawArrays(GL_LINE, 0, 8);
+
+		/* Copy Old Diffuse Output to Buffer */
+		glBindVertexArray(VAO);
+		defaultShader->use();
+		glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, diffusionOutputFBO);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 
 	/* Unbind */

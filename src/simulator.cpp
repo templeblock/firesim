@@ -12,7 +12,7 @@ void Simulator::init() {
 
 	/* Create new grid */
 	grid = new Grid();
-	grid->init(200, 0.01, 1);
+	grid->init(1000, 0.05, 1);
 	GPUsim = true;
 	normalized_renders = true;
 	current = VELOCITY;

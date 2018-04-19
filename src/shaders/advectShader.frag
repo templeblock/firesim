@@ -24,5 +24,5 @@ void main()
 
 	vec3 output = mix(colorB, colorT, 0.5f);
 	vec3 normalized = normalize(output);
-	FragColor = vec4(normalized, 1.f);
+	FragColor = vec4(output, 1.f);
 }

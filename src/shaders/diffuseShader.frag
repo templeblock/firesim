@@ -12,24 +12,23 @@ out vec4 FragColor;
 
 void main()
 {
-  vec2 pastPos = Tex - texture(input, Tex).xy * timeStep;
-  pastPos = clamp(pastPos, vec2(0.f, 0.f), vec2(1.f, 1.f));
-  vec2 alpha = ((texture(inVelocity, Tex) - texture(inVelocity, pastPos))
-              * (texture(inVelocity, Tex) - texture(inVelocity, pastPos)))/(timeStep/viscosity);
-  vec2 beta = vec2(1.0f/(4.0f + alpha.x), 1.0f/(4.0f + alpha.y));
+	vec3 alpha = ( ( texture(input, Tex).xyz - texture(dXdT, Tex).xyz )
+              * ( texture(input, Tex).xyz - texture(dXdT, Tex).xyz ) )
+			  /(timeStep/viscosity);
+  vec3 beta = vec3(1.0f/(4.0f + alpha.x), 1.0f/(4.0f + alpha.y), 0.f);
 
-	vec2 L = clamp(Tex + vec2(-cellSize * .5f, 0), vec2(0.f, 0.f), vec2(1.f, 1.f));
-	vec2 R = clamp(Tex + vec2( cellSize * .5f, 0), vec2(0.f, 0.f), vec2(1.f, 1.f));
-	vec2 T = clamp(Tex + vec2(0, cellSize * .5f), vec2(0.f, 0.f), vec2(1.f, 1.f));
-	vec2 B = clamp(Tex + vec2(0, -cellSize * .5f), vec2(0.f, 0.f), vec2(1.f, 1.f));
+	vec2 L = clamp(Tex + vec2(-cellSize * .5f, 0.f), vec2(0.f, 0.f), vec2(1.f, 1.f));
+	vec2 R = clamp(Tex + vec2( cellSize * .5f, 0.f), vec2(0.f, 0.f), vec2(1.f, 1.f));
+	vec2 T = clamp(Tex + vec2(0.f, cellSize * .5f), vec2(0.f, 0.f), vec2(1.f, 1.f));
+	vec2 B = clamp(Tex + vec2(0.f, -cellSize * .5f), vec2(0.f, 0.f), vec2(1.f, 1.f));
 
-  vec2 self = texture(inVelocity, Tex).xy;
-  vec2 L_vel = texture(inVelocity, L).xy;
-  vec2 R_vel = texture(inVelocity, R).xy;
-  vec2 T_vel = texture(inVelocity, T).xy;
-  vec2 B_vel = texture(inVelocity, B).xy;
+  vec3 self = texture(input, Tex).xyz;
+  vec3 L_vel = texture(input, L).xyz;
+  vec3 R_vel = texture(input, R).xyz;
+  vec3 T_vel = texture(input, T).xyz;
+  vec3 B_vel = texture(input, B).xyz;
 
-  output = (L_vel + R_vel + T_vel + B_vel + alpha * self) * beta;
+  vec3 output = (L_vel + R_vel + T_vel + B_vel + alpha * self).xyz * beta;
 
 	FragColor = vec4(output, 1.f);
 }
