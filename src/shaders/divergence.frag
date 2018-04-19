@@ -1,7 +1,6 @@
 #version 330 core
 
 uniform sampler2D inVelocity;
-//uniform sampler2D divergences;
 
 uniform float cellSize;
 uniform float timeStep;
@@ -22,6 +21,6 @@ void main()
   vec2 T_vel = texture(inVelocity, T).xy;
   vec2 B_vel = texture(inVelocity, B).xy;
 
-	vec3 output = ((R_vel - L_vel) + (T_vel - B_vel))/2.0f;
-	FragColor = vec4(output, 1.f);
+	float output = ((R_vel.x - L_vel.x) + (T_vel.y - B_vel.y))/2.0f;
+	FragColor = vec4(float, 1.f, 1.f, 1.f);
 }
