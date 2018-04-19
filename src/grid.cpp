@@ -69,12 +69,19 @@ void Grid::init(int size, double timestep, double viscosity) {
 	advectionOutputTex = FBO->createTexture(grid_size + 2, &fbo_vel[0]);
 	advectionOutputFBO = FBO->createFBO(advectionOutputTex);
 
+	diffusionOutputTex = FBO->createTexture(grid_size + 2, &fbo_vel[0]);
+	diffusionOutputFBO = FBO->createFBO(diffusionOutputTex);
+
+	bufferTex = FBO->createTexture(grid_size + 2, &fbo_vel[0]);
+	bufferFBO = FBO->createFBO(bufferTex);
+
 	renderToScreen = velocityInputTex;
 
 	/* Shaders */
 	defaultShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/defaultShader.frag");
 	bVelShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/velocityBorderShader.frag");
-	advectShader = new Shader("../src/shaders/advectShader.vert", "../src/shaders/advectShader.frag");
+	advectShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/advectShader.frag");
+	diffuseShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/diffuseShader.frag");
 }
 
 /******************************/
@@ -209,6 +216,47 @@ void Grid::stepOnce() {
 	bVelShader->use();
 	glBindVertexArray(bVAO);
 	glDrawArrays(GL_LINE, 0, 8);
+
+	/* Diffusion Loop */
+	diffuseShader->use();
+	diffuseShader->setFloat("cellSize", 1. / (grid_size + 2));
+	diffuseShader->setFloat("timeStep", timeStep);
+	for (int i = 0; i < 10; i++) {
+		/* Copy Old to Buffer */
+		glBindVertexArray(VAO);
+		defaultShader->use();
+		glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, velocityInputTex);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		/* Velocity -> Diffusion FBO */
+		diffuseShader->use();
+		glBindFramebuffer(GL_FRAMEBUFFER, diffusionOutputFBO);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, velocityInputTex);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		/* Write Velocity Boundary */
+		bVelShader->use();
+		glBindVertexArray(bVAO);
+		glDrawArrays(GL_LINE, 0, 8);
+
+		/* Diffusion -> Velocity FBO */
+		diffuseShader->use();
+		glBindFramebuffer(GL_FRAMEBUFFER, velocityInputFBO);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, diffusionOutputTex);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		/* Write Velocity Boundary */
+		bVelShader->use();
+		glBindVertexArray(bVAO);
+		glDrawArrays(GL_LINE, 0, 8);
+	}
 
 	/* Unbind */
 	glBindVertexArray(0);

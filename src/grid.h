@@ -69,6 +69,7 @@ private:
 	GLuint VBO, VAO, bVBO, bVAO;
 	GLuint velocityInputFBO, advectionOutputFBO, diffusionOutputFBO;
 	GLuint velocityInputTex, advectionOutputTex, diffusionOutputTex;
+	GLuint bufferFBO, bufferTex;
 	//who the fuck
 
 };
