@@ -14,7 +14,12 @@ void main()
 {
   vec2 pastPos = Tex - texture(input, Tex).xy * timeStep;
   pastPos = clamp(pastPos, vec2(0.f, 0.f), vec2(1.f, 1.f));
+<<<<<<< HEAD
   vec2 alpha = pow(texture(input, Tex) - texture(input, pastPos), 2.0f)/(timeStep/viscosity);
+=======
+  vec2 alpha = ((texture(inVelocity, Tex) - texture(inVelocity, pastPos))
+              * (texture(inVelocity, Tex) - texture(inVelocity, pastPos)))/(timeStep/viscosity);
+>>>>>>> 0e140dffd6c563b8e99354f1f63a8036dc6d4edc
   vec2 beta = vec2(1.0f/(4.0f + alpha.x), 1.0f/(4.0f + alpha.y));
 
 	vec2 L_B = clamp(Tex + vec2(-cellSize * .25f, -cellSize * .25f), vec2(0.f, 0.f), vec2(1.f, 1.f));
