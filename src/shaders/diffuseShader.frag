@@ -28,7 +28,7 @@ void main()
   vec3 T_vel = texture(inVelocity, T).xyz;
   vec3 B_vel = texture(inVelocity, B).xyz;
 
-  vec3 output = (L_vel + R_vel + T_vel + B_vel + alpha * self).xyz * beta;
+  vec3 res = (L_vel + R_vel + T_vel + B_vel + alpha * self).xyz * beta;
 
-	FragColor = vec4(output, 1.f);
+	FragColor = vec4(res, 1.f);
 }
