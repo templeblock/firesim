@@ -24,6 +24,5 @@ void main()
 	vec3 colorT = mix(texture(inQuantity, L_T).rgb, texture(inQuantity, R_T).rgb, .5f);
 
 	vec3 res = mix(colorB, colorT, 0.5f);
-	vec3 normalized = normalize(output); //Only for tests
 	FragColor = vec4(res, 1.f);
 }
