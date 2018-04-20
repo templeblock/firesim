@@ -12,7 +12,7 @@ void Simulator::init() {
 
 	/* Create new grid */
 	grid = new Grid();
-	grid->init(1000, 0.01, 1);
+	grid->init(500, 0.01, 1);
 	GPUsim = true;
 	normalized_renders = true;
 	current = VELOCITY;
@@ -94,6 +94,7 @@ void Simulator::bindScreenVertices() {
 void Simulator::simulate(float time) {
 	if (GPUsim) {
 		grid->stepOnce(20);
+		grid->moveDye(time);
 	}
 	else {
 		grid->calculateAdvection();
@@ -103,7 +104,6 @@ void Simulator::simulate(float time) {
 	}
 	drawContents();
 }
-
 
 void Simulator::drawContents() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -132,6 +132,7 @@ void Simulator::drawContents() {
 
 		cellShader->use();
 		cellShader->setMat4("model", o2w);
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, grid->renderToScreen);
 		glBindVertexArray(screenVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 6);

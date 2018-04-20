@@ -23,7 +23,11 @@ public:
 
 	void bindScreenVertices();
 
+	void bindSourceVertices();
+
 	void stepOnce(int iterations);
+
+	void moveDye(float time);
 
 	/* Simulation */
 	void calculateVelocity(float time);
@@ -45,7 +49,6 @@ public:
 	int grid_size;
 	float cell_size;
 	double timeStep;
-	float dye;
 	/* Fluid Settings */
 	double viscosity;
 
@@ -66,15 +69,19 @@ private:
 	Framebuffer *FBO;
 	Shader *defaultShader, *bVelShader;
 	Shader *advectShader, *diffuseShader, *divergeShader, *pressureShader, *gradientShader;
+	Shader *directionalShader;
 
-	GLuint VBO, VAO, bVBO, bVAO;
+	GLuint VBO, VAO; //Screen vertices
+	GLuint bVBO, bVAO; //Border vertices
+	GLuint sVBO, sVAO; //Source vertices
 
 	//Vector value textures - RGB correspond to XYZ
-	GLuint velocityInputFBO, advectionOutputFBO, diffusionOutputFBO;
-	GLuint velocityInputTex, advectionOutputTex, diffusionOutputTex;
+	GLuint centroidsFBO, velocityInputFBO, advectionOutputFBO, diffusionOutputFBO;
+	GLuint centroidsTex, velocityInputTex, advectionOutputTex, diffusionOutputTex;
+	GLuint dyeOutputFBO, dyeOutputTex;
 
 	//Scalar textures - RG correspond to divergence, pressure
-	GLuint scalarsOutputFBO, scalarsOutputTex, dyeOutputTex;
+	GLuint scalarsOutputFBO, scalarsOutputTex;
 
 	//Buffer textures for extra R/W
 	GLuint bufferFBO, bufferTex, buffer2FBO, buffer2Tex;

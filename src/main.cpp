@@ -52,9 +52,9 @@ int main(void) {
 	glfwMakeContextCurrent(window);
 
 	/* SET CALLBACKS */
+	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetScrollCallback(window, scroll_callback);
-	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -85,9 +85,7 @@ int main(void) {
 		processInput(window);
 
 		/** Render **/
-		if (frame % 5 == 0) {
-			simulation->simulate(deltaTime);
-		}
+		simulation->simulate(currentFrame);
 
 		/**Swap buffers & poll IO events**/
 		glfwSwapBuffers(window);
