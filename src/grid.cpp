@@ -100,9 +100,9 @@ void Grid::init(int size, double timestep, double viscosity) {
 	bVelShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/velocityBorderShader.frag");
 	advectShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/advectShader.frag");
 	diffuseShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/diffuseShader.frag");
-	//divergeShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/divergence.frag");
-	//pressureShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/pressure.frag");
-	//gradientShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/gradientSubtraction.frag");
+	divergeShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/divergence.frag");
+	pressureShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/pressure.frag");
+	gradientShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/gradientSubtraction.frag");
 
 	directionalShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/directionalShader.frag");
 }

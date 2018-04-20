@@ -18,17 +18,17 @@ void main()
   float beta = 1.0f/4.0f;
   float b = texture(divergences, Tex).x;
 
-  float L = clamp(Tex + vec2(-cellSize * .5f, 0.f), vec2(0.f, 0.f), vec2(1.f, 1.f));
-  float R = clamp(Tex + vec2( cellSize * .5f, 0.f), vec2(0.f, 0.f), vec2(1.f, 1.f));
-  float T = clamp(Tex + vec2(0.f, cellSize * .5f), vec2(0.f, 0.f), vec2(1.f, 1.f));
-  float B = clamp(Tex + vec2(0.f, -cellSize * .5f), vec2(0.f, 0.f), vec2(1.f, 1.f));
+  vec2 L = clamp(Tex + vec2(-cellSize * .5f, 0.f), vec2(0.f, 0.f), vec2(1.f, 1.f));
+  vec2 R = clamp(Tex + vec2( cellSize * .5f, 0.f), vec2(0.f, 0.f), vec2(1.f, 1.f));
+  vec2 T = clamp(Tex + vec2(0.f, cellSize * .5f), vec2(0.f, 0.f), vec2(1.f, 1.f));
+  vec2 B = clamp(Tex + vec2(0.f, -cellSize * .5f), vec2(0.f, 0.f), vec2(1.f, 1.f));
 
   float self = texture(inPressure, Tex).y;
-  L = texture(inPressure, L).y;
-  R = texture(inPressure, R).y;
-  T = texture(inPressure, T).y;
-  B = texture(inPressure, B).y;
+  float fL = texture(inPressure, L).y;
+  float fR = texture(inPressure, R).y;
+  float fT = texture(inPressure, T).y;
+  float fB = texture(inPressure, B).y;
 
-	float output = (L + R + B + T + alpha * b) * beta;
-	FragColor = vec4(vec2(self, output), 1.f, 1.f);
+	float res = (fL + fR + fB + fT + alpha * b) * beta;
+	FragColor = vec4(texture(divergences, Tex).x, res, 1.f, 1.f);
 }

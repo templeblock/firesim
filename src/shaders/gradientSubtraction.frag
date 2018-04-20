@@ -12,18 +12,18 @@ out vec4 FragColor;
 
 void main()
 {
-  float L = clamp(Tex + vec2(-cellSize * .5f, 0.f), vec2(0.f, 0.f), vec2(1.f, 1.f));
-  float R = clamp(Tex + vec2( cellSize * .5f, 0.f), vec2(0.f, 0.f), vec2(1.f, 1.f));
-  float T = clamp(Tex + vec2(0.f, cellSize * .5f), vec2(0.f, 0.f), vec2(1.f, 1.f));
-  float B = clamp(Tex + vec2(0.f, -cellSize * .5f), vec2(0.f, 0.f), vec2(1.f, 1.f));
+  vec2 L = clamp(Tex + vec2(-cellSize * .5f, 0.f), vec2(0.f, 0.f), vec2(1.f, 1.f));
+  vec2 R = clamp(Tex + vec2( cellSize * .5f, 0.f), vec2(0.f, 0.f), vec2(1.f, 1.f));
+  vec2 T = clamp(Tex + vec2(0.f, cellSize * .5f), vec2(0.f, 0.f), vec2(1.f, 1.f));
+  vec2 B = clamp(Tex + vec2(0.f, -cellSize * .5f), vec2(0.f, 0.f), vec2(1.f, 1.f));
 
-  L = texture(inPressure, L).y;
-  R = texture(inPressure, R).y;
-  T = texture(inPressure, T).y;
-  B = texture(inPressure, B).y;
+  float fL = texture(inPressure, L).y;
+  float fR = texture(inPressure, R).y;
+  float fT = texture(inPressure, T).y;
+  float fB = texture(inPressure, B).y;
 
   vec2 vel = texture(inVelocity, Tex).xy;
-
-	vec2 output = vel - (vec2((R - L)/2.0f, (T - B)/2.0f) * 0.5f);
-	FragColor = vec4(output, 1.f, 1.f);
+  
+  vec2 res = vel - (vec2((fR - fL)/2.0f, (fT - fB)/2.0f) * 0.5f);
+  FragColor = vec4(res, 1.f, 1.f);
 }
