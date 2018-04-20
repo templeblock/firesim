@@ -2,7 +2,6 @@
 
 uniform sampler2D inVelocity;
 uniform sampler2D inPressure;
-uniform sampler2D divergences;
 
 uniform float cellSize;
 uniform float timeStep;

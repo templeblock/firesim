@@ -45,6 +45,8 @@ public:
 	void calculateDivergence();
 	void gradientSubtraction();
 
+	void projectGPU(int iterations);
+
 	void boundaryConditions();
 
 	/* Simulation Settings */
@@ -71,7 +73,7 @@ private:
 	Framebuffer *FBO;
 
 	//Shaders
-	Shader *defaultShader, *bVelShader;
+	Shader *defaultShader, *bVelShader, *pVelShader;
 	Shader *advectShader, *diffuseShader, *divergeShader, *pressureShader, *gradientShader;
 	Shader *directionalShader, *circleShader, *buoyancyShader;
 
@@ -88,7 +90,8 @@ private:
 	GLuint buoyancyOutputTex, temperatureTex;
 
 	//Scalar textures - RG correspond to divergence, pressure
-	GLuint scalarsOutputFBO, scalarsOutputTex;
+	GLuint divergenceOutputFBO, pressureOutputFBO;
+	GLuint divergenceOutputTex, pressureOutputTex;
 
 	//Buffer textures for extra R/W
 	GLuint bufferFBO, bufferTex, buffer2FBO, buffer2Tex;

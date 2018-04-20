@@ -95,6 +95,7 @@ void Simulator::simulate(float time) {
 	if (GPUsim) {
 		grid->stepOnce(20);
 		grid->extForces(time);
+		grid->projectGPU(5);
 		grid->moveDye(time);
 	}
 	else {

@@ -1,7 +1,7 @@
 #version 330 core
 
-uniform sampler2D inVelocity;
 uniform sampler2D inPressure;
+uniform sampler2D inOldPressure;
 uniform sampler2D divergences;
 
 uniform float cellSize;
@@ -13,8 +13,8 @@ out vec4 FragColor;
 void main()
 {
   // Note: old pressures are stored in the x component, new ones stored in the y component
-  float alpha = -(texture(inPressure, Tex).y - texture(inPressure, Tex).x)
-              * (texture(inPressure, Tex).y - texture(inPressure, Tex).x);
+  float alpha = -(texture(inPressure, Tex).x - texture(inOldPressure, Tex).x)
+              * (texture(inPressure, Tex).x - texture(inOldPressure, Tex).x);
   float beta = 1.0f/4.0f;
   float b = texture(divergences, Tex).x;
 
@@ -23,12 +23,12 @@ void main()
   vec2 T = clamp(Tex + vec2(0.f, cellSize * .5f), vec2(0.f, 0.f), vec2(1.f, 1.f));
   vec2 B = clamp(Tex + vec2(0.f, -cellSize * .5f), vec2(0.f, 0.f), vec2(1.f, 1.f));
 
-  float self = texture(inPressure, Tex).y;
-  float fL = texture(inPressure, L).y;
-  float fR = texture(inPressure, R).y;
-  float fT = texture(inPressure, T).y;
-  float fB = texture(inPressure, B).y;
+  float self = texture(inPressure, Tex).x;
+  float fL = texture(inPressure, L).x;
+  float fR = texture(inPressure, R).x;
+  float fT = texture(inPressure, T).x;
+  float fB = texture(inPressure, B).x;
 
 	float res = (fL + fR + fB + fT + alpha * b) * beta;
-	FragColor = vec4(texture(divergences, Tex).x, res, 1.f, 1.f);
+	FragColor = vec4(res, 0.f, 0.f, 1.f);
 }

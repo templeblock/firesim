@@ -22,5 +22,5 @@ void main()
   vec2 B_vel = texture(inVelocity, B).xy;
 
 	float res = ((R_vel.x - L_vel.x) + (T_vel.y - B_vel.y))/2.0f;
-	FragColor = vec4(res, 1.f, 1.f, 1.f);
+	FragColor = vec4(res, 0.f, 0.f, 1.f);
 }
