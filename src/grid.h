@@ -27,6 +27,8 @@ public:
 
 	void stepOnce(int iterations);
 
+	void extForces(float time);
+
 	void moveDye(float time);
 
 	/* Simulation */
@@ -67,9 +69,11 @@ public:
 
 private:
 	Framebuffer *FBO;
+
+	//Shaders
 	Shader *defaultShader, *bVelShader;
 	Shader *advectShader, *diffuseShader, *divergeShader, *pressureShader, *gradientShader;
-	Shader *directionalShader;
+	Shader *directionalShader, *circleShader, *buoyancyShader;
 
 	GLuint VBO, VAO; //Screen vertices
 	GLuint bVBO, bVAO; //Border vertices
@@ -79,6 +83,9 @@ private:
 	GLuint centroidsFBO, velocityInputFBO, advectionOutputFBO, diffusionOutputFBO;
 	GLuint centroidsTex, velocityInputTex, advectionOutputTex, diffusionOutputTex;
 	GLuint dyeOutputFBO, dyeOutputTex;
+
+	GLuint buoyancyOutputFBO, temperatureFBO;
+	GLuint buoyancyOutputTex, temperatureTex;
 
 	//Scalar textures - RG correspond to divergence, pressure
 	GLuint scalarsOutputFBO, scalarsOutputTex;

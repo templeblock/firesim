@@ -94,6 +94,7 @@ void Simulator::bindScreenVertices() {
 void Simulator::simulate(float time) {
 	if (GPUsim) {
 		grid->stepOnce(20);
+		grid->extForces(time);
 		grid->moveDye(time);
 	}
 	else {

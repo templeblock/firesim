@@ -8,6 +8,6 @@ in vec3 position;
 void main()
 {
 	vec3 direction = position - source.xyz;
-	direction = direction*5;
+	direction = direction;
 	FragColor = vec4(direction, 1.f);
 }

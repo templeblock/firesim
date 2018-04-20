@@ -105,6 +105,8 @@ void Grid::init(int size, double timestep, double viscosity) {
 	gradientShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/gradientSubtraction.frag");
 
 	directionalShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/directionalShader.frag");
+	circleShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/circleShader.frag");
+	buoyancyShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/buoyancyShader.frag");
 }
 
 /******************************/
@@ -203,13 +205,13 @@ void Grid::bindSourceVertices() {
 	/* Boundary Vertices */
 	float source[] = {
 		//Vertices       //Tex Coords
-		-0.1f, -0.1f, 0.f,    0.5f, 0.5f,
-		-0.1f,  0.1f, 0.f,    0.5f, 0.5f,
-		 0.1f,  0.1f, 0.f,    0.5f, 0.5f,
+		-0.1f, -0.9f, 0.f,    0.5f, 0.05f,
+		-0.1f, -0.8f, 0.f,    0.5f, 0.1f,
+		 0.1f, -0.8f, 0.f,    0.5f, 0.05f,
 
-		 0.1f,  0.1f, 0.f,    0.5f, 0.5f,
-		 0.1f, -0.1f, 0.f,    0.5f, 0.5f,
-		-0.1f, -0.1f, 0.f,    0.5f, 0.5f
+		 0.1f, -0.8f, 0.f,    0.5f, 0.1f,
+		 0.1f, -0.9f, 0.f,    0.5f, 0.05f,
+		-0.1f, -0.9f, 0.f,    0.5f, 0.05f
 	};
 
 	glGenBuffers(1, &sVBO);
@@ -334,12 +336,35 @@ void Grid::stepOnce(int iterations) {
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 
-	/* External Forces */
-	glBindVertexArray(sVAO);
+	/* Unbind */
+	glBindVertexArray(0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void Grid::extForces(float time) {
+	/* Central Outward Force */
+	//glBindVertexArray(sVAO);
+	//glBindFramebuffer(GL_FRAMEBUFFER, velocityInputFBO);
+	//directionalShader->use();
+	//vec4 source = vec4(0.f, 0.f, 0.f, 0.f);
+	//directionalShader->setVec4("source", source);
+	//glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	/* Buoyancy */
+	//Copy to buffer
+	glBindVertexArray(VAO);
+	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
+	defaultShader->use();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, velocityInputTex);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	//Buoyancy
 	glBindFramebuffer(GL_FRAMEBUFFER, velocityInputFBO);
-	directionalShader->use();
-	vec4 source = vec4(0.f, 0.f, 0.f, 0.f);
-	directionalShader->setVec4("source", source);
+	buoyancyShader->use();
+	buoyancyShader->setFloat("speed", (sinf(time) + 1.f)/2.f);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, bufferFBO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	/* Unbind */
