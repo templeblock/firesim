@@ -4,6 +4,7 @@ uniform sampler2D inVelocity;
 
 uniform float cellSize;
 uniform float timeStep;
+uniform float dye;
 
 in vec2 Tex;
 out vec4 FragColor;
@@ -22,7 +23,7 @@ void main()
 	vec3 colorB = mix(texture(inVelocity, L_B).rgb, texture(inVelocity, R_B).rgb, .5f);
 	vec3 colorT = mix(texture(inVelocity, L_T).rgb, texture(inVelocity, R_T).rgb, .5f);
 
-	vec3 output = mix(colorB, colorT, 0.5f);
+	vec3 output = mix(colorB, colorT, 0.5f) * dye;
 	vec3 normalized = normalize(output);
 	FragColor = vec4(output, 1.f);
 }

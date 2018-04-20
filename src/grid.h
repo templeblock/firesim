@@ -45,6 +45,7 @@ public:
 	int grid_size;
 	float cell_size;
 	double timeStep;
+	float dye;
 	/* Fluid Settings */
 	double viscosity;
 
@@ -73,7 +74,7 @@ private:
 	GLuint velocityInputTex, advectionOutputTex, diffusionOutputTex;
 
 	//Scalar textures - RG correspond to divergence, pressure
-	GLuint scalarsOutputFBO, scalarsOutputTex;
+	GLuint scalarsOutputFBO, scalarsOutputTex, dyeOutputTex;
 
 	//Buffer textures for extra R/W
 	GLuint bufferFBO, bufferTex, buffer2FBO, buffer2Tex;

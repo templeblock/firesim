@@ -12,6 +12,7 @@ void Grid::init(int size, double timestep, double viscosity) {
 	viscosity = viscosity;
 	grid_size = size;
 	cell_size = 2.0 / (grid_size + 2.);
+	dye = 1.0; // default 1?
 
 	velocities = std::vector<dvec3>((grid_size+2) * (grid_size+2), dvec3(0.f, 0.f, 0.f));
 	//Randomly generate vector field
@@ -220,6 +221,30 @@ void Grid::stepOnce(int iterations) {
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	/* Write Velocity Boundary */
+	bVelShader->use();
+	glBindVertexArray(bVAO);
+	glDrawArrays(GL_LINE, 0, 8);
+
+	/* Advect (for dyes) */
+	glBindFramebuffer(GL_FRAMEBUFFER, advectionOutputFBO);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	advectShader->use();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, velocityInputTex);
+	advectShader->setFloat("cellSize", cell_size);
+	advectShader->setFloat("timeStep", timeStep);
+	advectShader->setFloat("dye", dye);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	/* Write to Dye Texture */
+	glBindFramebuffer(GL_FRAMEBUFFER, velocityInputFBO);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	defaultShader->use();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, dyeOutputTex);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	/* Write Dye Boundary */
 	bVelShader->use();
 	glBindVertexArray(bVAO);
 	glDrawArrays(GL_LINE, 0, 8);
