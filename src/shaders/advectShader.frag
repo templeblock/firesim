@@ -23,7 +23,6 @@ void main()
 	vec3 colorB = mix(texture(inQuantity, L_B).rgb, texture(inQuantity, R_B).rgb, .5f);
 	vec3 colorT = mix(texture(inQuantity, L_T).rgb, texture(inQuantity, R_T).rgb, .5f);
 
-	vec3 output = mix(colorB, colorT, 0.5f);
-	vec3 normalized = normalize(output); //Only for tests
-	FragColor = vec4(output, 1.f);
+	vec3 res = mix(colorB, colorT, 0.5f);
+	FragColor = vec4(res, 1.f);
 }

@@ -16,36 +16,37 @@ public:
 	void init(int size, double timestep, double viscosity);
 
 	/* Init, Dimensions, Locations */
+	void buildShaders();
+	void buildTextures();
+	void bindScreenVertices();
+	void bindSourceVertices();
+	// Old: GPU funcs
 	void setVertices();
 	void setCentroids();
-
 	int index (int x, int j);
 
-	void bindScreenVertices();
-
-	void bindSourceVertices();
-
-	void stepOnce(int iterations);
-
-	void extForces(float time);
-
-	void moveDye(float time);
-
 	/* Simulation */
-	void calculateVelocity(float time);
+	void stepOnce(int iterations);
+	void extForces(float time);
+	void projectGPU(int iterations);
+	void moveDye(float time);
+	void drawBoundary(int type);
 
+	// Old: CPU funcs*
+	void calculateVelocity(float time);
 	vec3 nearestBilerp(vec3 position);
 	void calculateAdvection();
-
 	void calculateDiffusion(int iterations);
 	void jacobiStepDiffuse(int i, int j);
 	void project(int iterations);
 	void jacobiStepPressure(int i, int j);
-
 	void calculateDivergence();
 	void gradientSubtraction();
-
 	void boundaryConditions();
+
+	/*****************/
+	/*   Variables   */
+	/*****************/
 
 	/* Simulation Settings */
 	int grid_size;
@@ -71,9 +72,9 @@ private:
 	Framebuffer *FBO;
 
 	//Shaders
-	Shader *defaultShader, *bVelShader;
+	Shader *defaultShader, *borderShader, *fillShader;
 	Shader *advectShader, *diffuseShader, *divergeShader, *pressureShader, *gradientShader;
-	Shader *directionalShader, *circleShader, *buoyancyShader;
+	Shader *directionalShader, *buoyancyShader, *fuelShader;
 
 	GLuint VBO, VAO; //Screen vertices
 	GLuint bVBO, bVAO; //Border vertices
@@ -82,13 +83,15 @@ private:
 	//Vector value textures - RGB correspond to XYZ
 	GLuint centroidsFBO, velocityInputFBO, advectionOutputFBO, diffusionOutputFBO;
 	GLuint centroidsTex, velocityInputTex, advectionOutputTex, diffusionOutputTex;
-	GLuint dyeOutputFBO, dyeOutputTex;
-
+	
+	//Fire sim textures
+	GLuint fuelOutputFBO, fuelOutputTex;
 	GLuint buoyancyOutputFBO, temperatureFBO;
 	GLuint buoyancyOutputTex, temperatureTex;
 
 	//Scalar textures - RG correspond to divergence, pressure
-	GLuint scalarsOutputFBO, scalarsOutputTex;
+	GLuint divergenceOutputFBO, pressureOutputFBO;
+	GLuint divergenceOutputTex, pressureOutputTex;
 
 	//Buffer textures for extra R/W
 	GLuint bufferFBO, bufferTex, buffer2FBO, buffer2Tex;

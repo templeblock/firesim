@@ -28,30 +28,18 @@ public:
 
 	/* Setup */
 	void init();
-	void bindVertices();
-	void bindVertexSet(unsigned int index, unsigned int pointer, const std::vector<float> vertices);
 
 	/* Run Simulation */
 	void simulate(float time);
 
 	void drawContents();
 	void drawTexture();
-	void drawGrid();
-	void drawArrows();
 
 	/* Interaction */
 	void moveCamera(vec3 moveBy);
 	void changeScrDimensions(int width, int height);
 
 	void bindScreenVertices();
-
-	void generateTextures();
-
-	void updateVelocityTexture(bool normalized);
-
-	void updatePressureTexture();
-
-	void updateDivergenceTexture();
 
 private:
 	
