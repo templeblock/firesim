@@ -12,14 +12,14 @@ void Simulator::init() {
 
 	/* Create new grid */
 	grid = new Grid();
-	grid->init(800, 0.02, 1);
+	grid->init(1000, 0.05, 1);
 
 	/* Create Camera and Set Projection Matrix */
 	CAMERA = new Camera();
 	CAMERA->init();
 
 	/* BUILD & COMPILE SHADERS */
-	cellShader = new Shader("../src/shaders/texShader.vert", "../src/shaders/texShader.frag");
+	cellShader = new Shader("../src/shaders/texShader.vert", "../src/shaders/defaultShader.frag");
 	gridShader = new Shader("../src/shaders/shader.vert", "../src/shaders/shader.frag");
 
 	/*Misc*/
@@ -87,9 +87,9 @@ void Simulator::bindScreenVertices() {
 
 void Simulator::simulate(float time) {
 	if (GPUsim) {
-		grid->stepOnce(20);
+		grid->stepOnce(15);
 		grid->extForces(time);
-		grid->projectGPU(5);
+		grid->projectGPU(20);
 		grid->moveDye(time);
 	}
 	else {

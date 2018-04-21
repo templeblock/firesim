@@ -24,5 +24,5 @@ void main()
   vec2 vel = texture(inVelocity, Tex).xy;
   
   vec2 res = vel - (vec2((fR - fL)/2.0f, (fT - fB)/2.0f) * 0.5f);
-  FragColor = vec4(res, 1.f, 1.f);
+  FragColor = vec4(res, 0.f, 1.f);
 }

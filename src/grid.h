@@ -15,45 +15,38 @@ public:
 	Grid() {}
 	void init(int size, double timestep, double viscosity);
 
-	void buildShaders();
-
-	void buildTextures();
-
 	/* Init, Dimensions, Locations */
+	void buildShaders();
+	void buildTextures();
+	void bindScreenVertices();
+	void bindSourceVertices();
+	// Old: GPU funcs
 	void setVertices();
 	void setCentroids();
-
 	int index (int x, int j);
 
-	void bindScreenVertices();
-
-	void bindSourceVertices();
-
+	/* Simulation */
 	void stepOnce(int iterations);
-
 	void extForces(float time);
-
+	void projectGPU(int iterations);
 	void moveDye(float time);
-
 	void drawBoundary(int type);
 
-	/* Simulation */
+	// Old: CPU funcs*
 	void calculateVelocity(float time);
-
 	vec3 nearestBilerp(vec3 position);
 	void calculateAdvection();
-
 	void calculateDiffusion(int iterations);
 	void jacobiStepDiffuse(int i, int j);
 	void project(int iterations);
 	void jacobiStepPressure(int i, int j);
-
 	void calculateDivergence();
 	void gradientSubtraction();
-
-	void projectGPU(int iterations);
-
 	void boundaryConditions();
+
+	/*****************/
+	/*   Variables   */
+	/*****************/
 
 	/* Simulation Settings */
 	int grid_size;
@@ -81,7 +74,7 @@ private:
 	//Shaders
 	Shader *defaultShader, *borderShader, *fillShader;
 	Shader *advectShader, *diffuseShader, *divergeShader, *pressureShader, *gradientShader;
-	Shader *directionalShader, *circleShader, *buoyancyShader;
+	Shader *directionalShader, *buoyancyShader, *fuelShader;
 
 	GLuint VBO, VAO; //Screen vertices
 	GLuint bVBO, bVAO; //Border vertices
@@ -90,8 +83,9 @@ private:
 	//Vector value textures - RGB correspond to XYZ
 	GLuint centroidsFBO, velocityInputFBO, advectionOutputFBO, diffusionOutputFBO;
 	GLuint centroidsTex, velocityInputTex, advectionOutputTex, diffusionOutputTex;
-	GLuint dyeOutputFBO, dyeOutputTex;
-
+	
+	//Fire sim textures
+	GLuint fuelOutputFBO, fuelOutputTex;
 	GLuint buoyancyOutputFBO, temperatureFBO;
 	GLuint buoyancyOutputTex, temperatureTex;
 

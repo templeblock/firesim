@@ -11,9 +11,9 @@ out vec4 FragColor;
 
 void main()
 {
-	vec2 orig = texture(inTex, Tex).xy;
+	float orig = texture(inTex, Tex).x;
 	float dist = distance(center.xyz, position);
 	float compare = step(dist, radius); //0 if radius < dist, 1 otherwise;
-	vec2 res = clamp(orig + vec2(compare, compare), 0.f, 1.f);
-	FragColor = vec4(res, 0.f, 1.f);
+	float res = clamp(orig + compare, 0.f, 1.f);
+	FragColor = vec4(res, 0.f, 0.f, 1.f);
 }
