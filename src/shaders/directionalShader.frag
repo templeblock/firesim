@@ -1,13 +1,14 @@
 #version 330 core
 
-uniform vec4 source;
+uniform sampler2D inVelocity;
+uniform float time;
 
 out vec4 FragColor;
 in vec3 position;
+in vec2 Tex;
 
 void main()
 {
-	vec3 direction = position - source.xyz;
-	direction = direction;
-	FragColor = vec4(direction, 1.f);
+	vec2 result = texture(inVelocity, Tex).xy + vec2(cos(time), sin(time))*.005f;
+	FragColor = vec4(result, 0.f, 1.f);
 }

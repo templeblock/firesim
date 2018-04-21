@@ -302,6 +302,22 @@ void Grid::extForces(float time) {
 	buoyancyShader->setInt("inTemperature", 1);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
+	/* Directional */
+	//Copy to buffer
+	glBindVertexArray(VAO);
+	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
+	defaultShader->use();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, velocityInputTex);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	//Directional
+	glBindFramebuffer(GL_FRAMEBUFFER, velocityInputFBO);
+	directionalShader->use();
+	directionalShader->setFloat("time", time + ((rand() % 10)/.5f));
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, bufferFBO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
 	/* Unbind */
 	glBindVertexArray(0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
