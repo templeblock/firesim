@@ -86,18 +86,10 @@ void Simulator::bindScreenVertices() {
 }
 
 void Simulator::simulate(float time) {
-	if (GPUsim) {
-		grid->stepOnce(15);
-		grid->extForces(time);
-		grid->projectGPU(20);
-		grid->moveDye(time);
-	}
-	else {
-		grid->calculateAdvection();
-		grid->calculateDiffusion(5);
-		grid->project(5);
-		grid->boundaryConditions();
-	}
+	grid->stepOnce(20);
+	grid->extForces(time);
+	grid->projectGPU(20);
+	grid->moveDye(time);
 	drawContents();
 }
 
@@ -130,7 +122,7 @@ void Simulator::drawTexture() {
 
 	cellShader->use();
 	cellShader->setMat4("model", o2w);
-	glBindTexture(GL_TEXTURE_2D, currentTex);
+	glBindTexture(GL_TEXTURE_2D, grid->renderToScreen);
 	glBindVertexArray(screenVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
