@@ -15,6 +15,10 @@ public:
 	Grid() {}
 	void init(int size, double timestep, double viscosity);
 
+	void buildShaders();
+
+	void buildTextures();
+
 	/* Init, Dimensions, Locations */
 	void setVertices();
 	void setCentroids();
@@ -30,6 +34,8 @@ public:
 	void extForces(float time);
 
 	void moveDye(float time);
+
+	void drawBoundary(int type);
 
 	/* Simulation */
 	void calculateVelocity(float time);
@@ -73,7 +79,7 @@ private:
 	Framebuffer *FBO;
 
 	//Shaders
-	Shader *defaultShader, *bVelShader, *pVelShader;
+	Shader *defaultShader, *borderShader, *fillShader;
 	Shader *advectShader, *diffuseShader, *divergeShader, *pressureShader, *gradientShader;
 	Shader *directionalShader, *circleShader, *buoyancyShader;
 
