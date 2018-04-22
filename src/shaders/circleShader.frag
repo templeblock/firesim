@@ -14,6 +14,6 @@ void main()
 	float orig = texture(inTex, Tex).x;
 	float dist = distance(center.xyz, position);
 	float compare = step(dist, radius); //0 if radius < dist, 1 otherwise;
-	float res = clamp(orig + compare, 0.f, 1.f);
+	float res = min(orig + compare, 1.f);
 	FragColor = vec4(res, 0.f, 0.f, 1.f);
 }

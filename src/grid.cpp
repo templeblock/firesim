@@ -43,6 +43,7 @@ void Grid::buildShaders() {
 	gradientShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/gradientSubtraction.frag");
 
 	directionalShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/directionalShader.frag");
+	splatShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/splatShader.frag");
 	fuelShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/fuelShader.frag");
 	buoyancyShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/buoyancyShader.frag");
 }
@@ -282,9 +283,35 @@ void Grid::stepOnce(int iterations) {
 }
 
 void Grid::extForces(float time) {
+	glBindVertexArray(VAO);
+
+	/* Copy Old Velocity to Buffer */
+	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	defaultShader->use();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, velocityInputTex);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	/* Gaussian Splat*/
+	glBindFramebuffer(GL_FRAMEBUFFER, velocityInputFBO);
+	splatShader->use();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, bufferTex);
+	vec4 center = vec4(0.f, 0.f, 0.f, 0.f);
+	splatShader->setVec4("center", center);
+	splatShader->setFloat("radius", 0.2f);
+	vec4 force = vec4(0.f, 0.f, 0.f, 0.f);
+	force.x = (rand() % 10) - 5;
+	force.y = (rand() % 5);
+	force /= 1000.f;
+	force /= (int) (rand() % 100);
+	splatShader->setVec4("force", force);
+	splatShader->setFloat("timeStep", timeStep);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
 	/* Buoyancy */
 	//Copy to buffer
-	glBindVertexArray(VAO);
 	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
 	defaultShader->use();
 	glActiveTexture(GL_TEXTURE0);
@@ -294,7 +321,7 @@ void Grid::extForces(float time) {
 	glBindFramebuffer(GL_FRAMEBUFFER, velocityInputFBO);
 	buoyancyShader->use();
 	buoyancyShader->setFloat("speed", .02f);
-	buoyancyShader->setFloat("ambient", 0.5f);
+	buoyancyShader->setFloat("ambient", 0.0f);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, bufferFBO);
 	glActiveTexture(GL_TEXTURE1);
@@ -302,7 +329,7 @@ void Grid::extForces(float time) {
 	buoyancyShader->setInt("inVelocity", 0);
 	buoyancyShader->setInt("inTemperature", 1);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
-
+	
 	/* Directional */
 	//Copy to buffer
 	glBindVertexArray(VAO);
@@ -399,9 +426,9 @@ void Grid::projectGPU(int iterations) {
 }
 
 void Grid::moveDye(float time) {
+	glBindVertexArray(VAO);
 
 	/* Copy Old Fuel Distribution to Buffer */
-	glBindVertexArray(VAO);
 	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	defaultShader->use();
@@ -418,7 +445,7 @@ void Grid::moveDye(float time) {
 	defaultShader->setInt("input_texture", 0);
 	vec4 center = vec4(0.f, -0.7f, 0.f, 0.f);
 	fillShader->setVec4("center", center);
-	fillShader->setFloat("radius", 0.08f);
+	fillShader->setFloat("radius", 0.1f);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	/* Copy Old Fuel Distribution to Buffer */
@@ -479,7 +506,7 @@ void Grid::moveDye(float time) {
 		/* Diffusion -> Buffer */
 		glBindFramebuffer(GL_FRAMEBUFFER, fuelOutputFBO);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, bufferFBO);
+		glBindTexture(GL_TEXTURE_2D, bufferTex);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 

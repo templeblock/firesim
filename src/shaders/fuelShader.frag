@@ -12,5 +12,6 @@ void main()
 {
 	float res = texture(inQuantity, Tex).x;
 	res = res - rate * timeStep;
+	res = clamp (res, -1.f, 1.f);
 	FragColor = vec4(res, 0.f, 0.f, 1.f);
 }

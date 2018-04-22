@@ -74,7 +74,7 @@ private:
 	//Shaders
 	Shader *defaultShader, *borderShader, *fillShader;
 	Shader *advectShader, *diffuseShader, *divergeShader, *pressureShader, *gradientShader;
-	Shader *directionalShader, *buoyancyShader, *fuelShader;
+	Shader *directionalShader, *splatShader, *buoyancyShader, *fuelShader;
 
 	GLuint VBO, VAO; //Screen vertices
 	GLuint bVBO, bVAO; //Border vertices
