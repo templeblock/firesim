@@ -24,22 +24,45 @@
     <div class="content">
       <h1>Milestone</h1>
       <h2>Real-Time Fire Simulation</h2>
-      <p>In order to speed up rendering, especially as our fluid simulations get more complex, we want to utilize the GPU as much as possible. This involves setting up GLFW to use with the OpenGL library, which is both cross-language and cross-platform. To manage all of the setup and configuration, however, which can be cumbersome since different computers use different OpenGL driver versions, we use the library GLAD.</p>
+      <p>In order to speed up rendering, especially as our fluid simulations get more complex, we wanted to utilize the GPU. Our first step was setting up GLFW to use with the OpenGL library, which is both cross-language and cross-platform. To manage all of the setup and configuration, however, which can be cumbersome since different computers use different OpenGL driver versions, we use the GLAD library.</p>
 
-      <p>Initially, we test that our setup works by getting an application window to open and rendering a simple triangle to the screen, as well as implementing basic camera controls such as zooming in and out. For our fluid simulation, we reference the Navier-Stokes equation, which assumes an incompressible, homogeneous fluid. This equation is composed of four main parts: advection, pressure, diffusion, and external forces. To represent our general fluid, we store a velocity and scalar pressure field. For now, our implementation is in 2D, where we use a Cartesian grid to simulate fluid dynamics; later on we will transfer our simulation to 3D.</p>
+      <p>Initially, we tested that our setup worked by getting an application window to open and rendering a simple triangle to the screen, as well as implementing basic camera controls such as zooming in and out. For our fluid simulation, we reference the Navier-Stokes equation, which assumes an incompressible, homogeneous fluid. This equation is composed of four main parts: advection, pressure, diffusion, and external forces. To represent our general fluid, we stored a velocity and scalar pressure field. For now, our implementation is in 2D, where we use a Cartesian grid to simulate fluid dynamics; later on we will transfer our simulation to 3D.</p>
 
-      <p>Before computing any of the terms in the Navier-Stokes equation, we set up a visualization of the fluid velocity, which is a vector field, on our 2D grid. Once we verified that worked, to update the velocity field at each time step, we apply advection, diffusion, and external forces (buoyancy and wind for now) on the velocity field. The resulting field has non-zero divergence, which we must correct for by using the Helmholtz-Hodge Decomposition Theorem; that is, we can subtract the gradient of the resulting pressure field to obtain a field with divergence-free velocity. To calculate the resulting pressure field, however, requires some extra computation:</p>
+      <div align="center">
+      <img src = "images/dying4-advectiononly.gif" width = "50%">
+      <figcaption>Arrow Representation of Advection Function</figcaption>
+      </div>
+
+      <p>Before computing any of the terms in the Navier-Stokes equation, we set up a visualization of the fluid velocity, which is a vector field, on our 2D grid. Once we verified that it worked, to update the velocity field at each time step, we applied advection and diffusion on the velocity field. The resulting field has non-zero divergence, which we must correct for by using the Helmholtz-Hodge Decomposition Theorem, in which we subtract the gradient of the resulting pressure field to obtain a field with divergence-free velocity. To calculate the resulting pressure field, however, requires some extra computation:</p>
       <ul>
         <li>First, we obtain a Poisson-pressure equation by applying divergence on our velocity field from earlier</li>
         <li>We can solve for the pressure in this equation using Jacobian iteration</li>
         <li>Finally, we can apply the gradient and subtract from our earlier velocity field to obtain a field with zero divergence</li>
       </ul>
-      <p>Throughout this process, we also added a colorful texture for better visualization and a dye source, continually generated at the center of the grid, and observed how the velocity field pushed it outwards and how the dye diffused over time.</p>
+      <p>After completing the Navier-Stokes fluid solver with CPU functions and verifying that we understood the mechanics of it, we began moving the implementation into GPU. We began by adding textures to store velocity, pressure, divergence, etc. We also added a passive dye value that would be passively advected by the velocity field from the Navier-Stokes computations. Each step of the fluid solver was written as a separate GLSL frag shader and drawn onto a framebuffer to perform the calculation. This resulted in a substantial speedup. While the CPU solver was only able to simulate up to a 100x100 grid without noticeable lag, the GPU solver could handle grid sizes of over 1500x1500.</p>
 
-      <p>To better mimic the fire we are trying to simulate, we added in a fuel source as described in the Nguyen paper near the bottom of our grid. We also modified our advection scheme to the MacCormack scheme, which yields more realistic fire effects than the previous semi-Lagrangian scheme described above; such a scheme, though stable, introduced numerical smoothing which caused our fire to lose detail and appear unnaturally smooth.</p>
+      <table class="staticimg">
+        <caption></caption>
+        <tr>
+            <td><img src="images/dying4-vel_texture.gif"><figcaption>Velocity texture over time, with RG corresponding to XY (normalized for visual clarity)</figcaption></td>
+            <td><img src="images/dying4-varyingdyecolor.gif"><figcaption>Dye advecting out from center (Color is a function of time)</figcaption></td>
+        </tr>
+    </table>
+
+      <p>To better mimic the fire we are trying to simulate, we replaced the dye with a texture representing fuel quantity, which decreased linearly at every cell to simulate being "consumed" by the combustion reaction. The fuel quantity is continuously filled at its "source" (a circle at the base of the flame) and then advected by the velocity field. We also used the fuel quantity to create a temperature map, which we then use to apply buoyancy. We also added minor amounts of random wind and Gaussian splatting to create a greater degree of realism from random external forces.</p>
+
+      <table class="staticimg">
+        <caption></caption>
+        <tr>
+            <td><img src="images/dying4-velocity_stam.gif"><figcaption>Velocity field over time, with buoyancy and random forces</figcaption></td>
+            <td><img src="images/dying4-fuel_stam.gif"><figcaption>Fuel quantity over time</figcaption></td>
+        </tr>
+    </table>
+
+      <p>We are currently working on modifying our advection scheme to the MacCormack scheme, which yields more detail than the previous implicit Stam method, which causes more numerical smoothing.</p>
 
       <h2>Timeline Update</h2>
-      <p>Up till now we have implemented most of our fire simulation physics in 2D. Aside from vorticity confinement, for the most part our work in 2D fire simulation is done; our next step is moving the simulation to 3D and implementing ray marching in order to render textures. Finally, we would like to add more realistic physics to the fire such as implicit surfaces.</p>
+      <p>Up till now we have implemented most of our fire simulation physics in 2D. Aside from improving realism with features such as vorticity confinement, for the most part our work in 2D fire simulation is done; our next step is moving the simulation to 3D, implementing ray marching to find the temperature value, and mapping the temperature value to the correct human-observed color value. Finally, we would like to add more realistic physics to the fire such as using an implicit surface to define the reaction core (Nguyen et. al).</p>
 
       <p>Relative to our work plan, we are a little bit behind; by this time ideally we would have finished vorticity and moved our implmentation to 3D, although we have begun implementing some of the material slotted for week 4 in our timeline (improved realism, namely MacCormack). Ideally, by the end of this week we would finish up the physics for 2D and/or move our implementation to 3D. Ray marching is a rather difficult task and might take us most of the last week.</p>
     </div>
