@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <title>Fire Simulation Project  |  CS 184</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
+</head>
+<body>
+<div class="page">
+    <div class="title">
+        <h1>FireSim</h1>
+        <h2>CS184 | Final Project</h2>
+    </div>
+    <div class="navbar">
+        <table>
+            <tr>
+                <td><a href="index.html">Home</a></td>
+                <td><a href="proposal.html">Proposal</a></td>
+                <td><a href="milestone.html">Milestone</a></td>
+                <td><a href="final.html">Final</a></td>
+            </tr>
+        </table>
+    </div>
+    <div class="content">
+      <h1>Milestone</h1>
+      <h2>Real-Time Fire Simulation</h2>
+      <p>In order to speed up rendering, especially as our fluid simulations get more complex, we want to utilize the GPU as much as possible. This involves setting up GLFW to use with the OpenGL library, which is both cross-language and cross-platform. To manage all of the setup and configuration, however, which can be cumbersome since different computers use different OpenGL driver versions, we use the library GLAD.</p>
+
+      <p>Initially, we test that our setup works by getting an application window to open and rendering a simple triangle to the screen, as well as implementing basic camera controls such as zooming in and out. For our fluid simulation, we reference the Navier-Stokes equation, which assumes an incompressible, homogeneous fluid. This equation is composed of four main parts: advection, pressure, diffusion, and external forces. To represent our general fluid, we store a velocity and scalar pressure field. For now, our implementation is in 2D, where we use a Cartesian grid to simulate fluid dynamics; later on we will transfer our simulation to 3D.</p>
+
+      <p>Before computing any of the terms in the Navier-Stokes equation, we set up a visualization of the fluid velocity, which is a vector field, on our 2D grid. Once we verified that worked, to update the velocity field at each time step, we apply advection, diffusion, and external forces (buoyancy and wind for now) on the velocity field. The resulting field has non-zero divergence, which we must correct for by using the Helmholtz-Hodge Decomposition Theorem; that is, we can subtract the gradient of the resulting pressure field to obtain a field with divergence-free velocity. To calculate the resulting pressure field, however, requires some extra computation:</p>
+      <ul>
+        <li>First, we obtain a Poisson-pressure equation by applying divergence on our velocity field from earlier</li>
+        <li>We can solve for the pressure in this equation using Jacobian iteration</li>
+        <li>Finally, we can apply the gradient and subtract from our earlier velocity field to obtain a field with zero divergence</li>
+      </ul>
+      <p>Throughout this process, we also added a colorful texture for better visualization and a dye source, continually generated at the center of the grid, and observed how the velocity field pushed it outwards and how the dye diffused over time.</p>
+
+      <p>To better mimic the fire we are trying to simulate, we added in a fuel source as described in the Nguyen paper near the bottom of our grid. We also modified our advection scheme to the MacCormack scheme, which yields more realistic fire effects than the previous semi-Lagrangian scheme described above; such a scheme, though stable, introduced numerical smoothing which caused our fire to lose detail and appear unnaturally smooth.</p>
+
+      <h2>Timeline Update</h2>
+      <p>Up till now we have implemented most of our fire simulation physics in 2D. Aside from vorticity confinement, for the most part our work in 2D fire simulation is done; our next step is moving the simulation to 3D and implementing ray marching in order to render textures. Finally, we would like to add more realistic physics to the fire such as implicit surfaces.</p>
+
+      <p>Relative to our work plan, we are a little bit behind; by this time ideally we would have finished vorticity and moved our implmentation to 3D, although we have begun implementing some of the material slotted for week 4 in our timeline (improved realism, namely MacCormack). Ideally, by the end of this week we would finish up the physics for 2D and/or move our implementation to 3D. Ray marching is a rather difficult task and might take us most of the last week.</p>
+    </div>
+</div>
+</body>
+</html>
