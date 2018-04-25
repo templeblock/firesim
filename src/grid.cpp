@@ -12,7 +12,7 @@ void Grid::init(int size, double timestep, double viscosity) {
 	viscosity = viscosity;
 	grid_size = size;
 	cell_size = 2.0 / (grid_size + 2.);
-	
+
 	/******************************/
 	/* GPU Process Initialization */
 	/******************************/
@@ -36,7 +36,7 @@ void Grid::buildShaders() {
 	fillShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/circleShader.frag");
 
 	//advectShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/macCormack.frag");
-	advectShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/advectShader.frag");
+	advectShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/macCormack.frag");
 	diffuseShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/diffuseShader.frag");
 	divergeShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/divergence.frag");
 	pressureShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/pressure.frag");
@@ -329,7 +329,7 @@ void Grid::extForces(float time) {
 	buoyancyShader->setInt("inVelocity", 0);
 	buoyancyShader->setInt("inTemperature", 1);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
-	
+
 	/* Directional */
 	//Copy to buffer
 	glBindVertexArray(VAO);
