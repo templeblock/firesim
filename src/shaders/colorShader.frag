@@ -1,11 +1,15 @@
 #version 330 core
  
+ uniform vec3 raw; //the spectrum at that point
+ uniform vec3 hot; //the hottest (brightest) spectrum at the point
 
+ in vec2 Tex;
+ out vec4 FragColor;
 
 void main()
 {
 	//Source for M: http://www.brucelindbloom.com/index.html?Eqn_ChromAdapt.html
-	mat3 M = mat3(
+	mat3 M = mat3( //convert to LMS?
 					0.4002400, -0.2263000, 0.0000000, // first column (not row!)
 					0.7076000, 1.1653200, 0.0000000, // second column
 				   -0.0808100, 0.0457000, 0.9182200  // third column
@@ -16,11 +20,10 @@ void main()
 				   0.2198974, -0.0000064, 1.0890636  // third column
 				);
 	
-	float Xr = raw.x;
-	float Yr = raw.y;
-	float Zr = raw.z;
+	vec3 white = M * hot;
 
 	//Assuming white is hottest point
+	//change white to lms space
 	float Lw = white.x;
 	float Mw = white.y;
 	float Sw = white.z;
@@ -32,4 +35,5 @@ void main()
 					);
 				
 	xyz_adjusted = invM * colorScale * M * raw;
+	FragColor = vec4(xyz_adjusted, 1.f);
 }
