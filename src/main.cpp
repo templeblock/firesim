@@ -14,6 +14,7 @@ using namespace std;
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -23,6 +24,10 @@ Simulator *simulation;
 
 float deltaTime = 0;
 float lastFrame = 0;
+double lastMousePosX;
+double lastMousePosY;
+
+bool drag = false;
 
 int main(void) {
 
@@ -55,6 +60,7 @@ int main(void) {
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetScrollCallback(window, scroll_callback);
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -80,6 +86,13 @@ int main(void) {
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 		frame++;
+
+		if (drag) {
+			double lastPosX = lastMousePosX;
+			double lastPosY = lastMousePosY;
+			glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
+			simulation->rotateCamera(lastPosX - lastMousePosX, lastPosY - lastMousePosY);
+		}
 
 		/**Input**/
 		processInput(window);
@@ -116,4 +129,15 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 	float camSpeed = 5.f * deltaTime;
 	simulation->moveCamera(vec3(0.f, 0.f, camSpeed * yoffset));
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+		drag = true;
+		glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
+	}
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+		drag = false;
+	}
 }

@@ -9,11 +9,15 @@ class Camera {
 public:
 
 	Camera() {}
-	void init();
+	void init(double width, double height);
+
+	void changeScreenDimens(double width, double height);
 
 	/*****************************************/
 	/* Position, Orientation, Movement, etc. */
 	/*****************************************/
+	//Screen Dimensions
+	double SCR_WIDTH, SCR_HEIGHT;
 
 	//Cam position and cam target position
 	vec3 camPos, camTarget;
@@ -28,6 +32,8 @@ public:
 	mat4 getViewMatrix();
 
 	void move(vec3 moveBy);
+
+	void rotateBy(double deltaX, double deltaY);
 
 	/*****************/
 	/* Viewing Plane */

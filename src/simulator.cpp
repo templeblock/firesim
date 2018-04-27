@@ -16,7 +16,7 @@ void Simulator::init() {
 
 	/* Create Camera and Set Projection Matrix */
 	CAMERA = new Camera();
-	CAMERA->init();
+	CAMERA->init(SCR_WIDTH, SCR_HEIGHT);
 
 	/* BUILD & COMPILE SHADERS */
 	cellShader = new Shader("../src/shaders/texShader.vert", "../src/shaders/defaultShader.frag");
@@ -35,10 +35,15 @@ void Simulator::moveCamera(vec3 moveBy) {
 	CAMERA->move(moveBy);
 }
 
+void Simulator::rotateCamera(double deltaX, double deltaY) {
+	CAMERA->rotateBy(deltaX, deltaY);
+}
+
 void Simulator::changeScrDimensions(int width, int height) {
 	SCR_WIDTH = (float) width;
 	SCR_HEIGHT = (float) height;
 
+	CAMERA->changeScreenDimens(SCR_WIDTH, SCR_HEIGHT);
 	glViewport(0, 0, (unsigned int) SCR_WIDTH, (unsigned int)SCR_HEIGHT);
 
 	//Projection matrix (Camera to screen)

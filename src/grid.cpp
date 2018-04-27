@@ -36,7 +36,7 @@ void Grid::buildShaders() {
 	fillShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/circleShader.frag");
 
 	//advectShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/macCormack.frag");
-	advectShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/macCormack.frag");
+	advectShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/advectShader.frag");
 	diffuseShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/diffuseShader.frag");
 	divergeShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/divergence.frag");
 	pressureShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/pressure.frag");

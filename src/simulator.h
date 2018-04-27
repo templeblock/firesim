@@ -37,6 +37,7 @@ public:
 
 	/* Interaction */
 	void moveCamera(vec3 moveBy);
+	void rotateCamera(double deltaX, double deltaY);
 	void changeScrDimensions(int width, int height);
 
 	void bindScreenVertices();
