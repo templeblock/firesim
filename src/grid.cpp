@@ -45,6 +45,7 @@ void Grid::buildShaders() {
 	directionalShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/directionalShader.frag");
 	splatShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/splatShader.frag");
 	fuelShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/fuelShader.frag");
+	colorShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/colorShader.frag");
 	buoyancyShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/buoyancyShader.frag");
 }
 
@@ -65,6 +66,8 @@ void Grid::buildTextures() {
 
 	bufferTex = FBO->create3DTexture(grid_size + 2, &fbo_vel[0]);
 	buffer2Tex = FBO->create3DTexture(grid_size + 2, &fbo_vel[0]);
+
+	colorOutputTex = FBO->createTexture(grid_size + 2, &fbo_vel[0]);
 
 	writeFBO = FBO->create3DFBO(bufferTex);
 }
