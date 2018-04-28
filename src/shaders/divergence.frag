@@ -12,18 +12,23 @@ out vec4 FragColor;
 void main()
 {
 	vec3 tex = vec3(Tex, cellSize * slice);
-	vec3 L = tex + vec3(-cellSize * .5f, 0.f, 0.f);
-	vec3 R = tex + vec3( cellSize * .5f, 0.f, 0f);
-	vec3 T = tex + vec3(0.f,  cellSize * .5f, 0.f);
-	vec3 B = tex + vec3(0.f, -cellSize * .5f, 0.f);
 
-	vec2 self =  texture(inVelocity, tex).xy;
-	vec2 L_vel = texture(inVelocity, L).xy;
-	vec2 R_vel = texture(inVelocity, R).xy;
-	vec2 T_vel = texture(inVelocity, T).xy;
-	vec2 B_vel = texture(inVelocity, B).xy;
+	vec3 L = clamp(tex + vec3(-cellSize * .5f, 0.f, 0.f), 0.f, 1.f);
+	vec3 R = clamp(tex + vec3( cellSize * .5f, 0.f, 0f), 0.f, 1.f);
+	vec3 T = clamp(tex + vec3(0.f,  cellSize * .5f, 0.f), 0.f, 1.f);
+	vec3 B = clamp(tex + vec3(0.f, -cellSize * .5f, 0.f), 0.f, 1.f);
+	vec3 U = clamp(tex + vec3(0.f, 0.f,  cellSize * .5f), 0.f, 1.f); //front
+	vec3 D = clamp(tex + vec3(0.f, 0.f, -cellSize * .5f), 0.f, 1.f); //back
 
-	float res = (R_vel.x - L_vel.x) + (T_vel.y - B_vel.y);
+	vec3 self =  texture(inVelocity, tex).xyz;
+	vec3 L_vel = texture(inVelocity, L).xyz;
+	vec3 R_vel = texture(inVelocity, R).xyz;
+	vec3 T_vel = texture(inVelocity, T).xyz;
+	vec3 B_vel = texture(inVelocity, B).xyz;
+	vec3 U_vel = texture(inVelocity, U).xyz;
+	vec3 D_vel = texture(inVelocity, D).xyz;
+
+	float res = (R_vel.x - L_vel.x) + (T_vel.y - B_vel.y) + (U_vel.z - D_vel.z);
 	res = res * 0.5f;
 	FragColor = vec4(res, 0.f, 0.f, 1.f);
 }
