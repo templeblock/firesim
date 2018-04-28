@@ -80,21 +80,20 @@ private:
 	GLuint bVBO, bVAO; //Border vertices
 	GLuint sVBO, sVAO; //Source vertices
 
+	//FBO
+	GLuint writeFBO;
+
 	//Vector value textures - RGB correspond to XYZ
-	GLuint centroidsFBO, velocityInputFBO, advectionOutputFBO, diffusionOutputFBO;
 	GLuint centroidsTex, velocityInputTex, advectionOutputTex, diffusionOutputTex;
-	
+
 	//Fire sim textures
-	GLuint fuelOutputFBO, fuelOutputTex;
-	GLuint buoyancyOutputFBO, temperatureFBO;
-	GLuint buoyancyOutputTex, temperatureTex;
+	GLuint fuelOutputTex, buoyancyOutputTex, temperatureTex;
 
 	//Scalar textures - RG correspond to divergence, pressure
-	GLuint divergenceOutputFBO, pressureOutputFBO;
 	GLuint divergenceOutputTex, pressureOutputTex;
 
 	//Buffer textures for extra R/W
-	GLuint bufferFBO, bufferTex, buffer2FBO, buffer2Tex;
+	GLuint bufferTex, buffer2Tex;
 };
 
 #endif

@@ -1,6 +1,8 @@
 #version 330 core
 
-uniform sampler2D inQuantity;
+uniform sampler3D inQuantity;
+uniform float cellSize;
+uniform float slice;
 
 uniform float rate;
 uniform float timeStep;
@@ -10,7 +12,8 @@ out vec4 FragColor;
 
 void main()
 {
-	float res = texture(inQuantity, Tex).x;
+	vec3 tex = vec3(Tex, cellSize * slice);
+	float res = texture(inQuantity, tex).x;
 	res = res - rate * timeStep;
 	res = clamp (res, -1.f, 1.f);
 	FragColor = vec4(res, 0.f, 0.f, 1.f);

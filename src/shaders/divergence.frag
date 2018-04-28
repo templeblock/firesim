@@ -1,6 +1,7 @@
 #version 330 core
 
-uniform sampler2D inVelocity;
+uniform sampler3D inVelocity;
+uniform float slice;
 
 uniform float cellSize;
 uniform float timeStep;
@@ -10,12 +11,13 @@ out vec4 FragColor;
 
 void main()
 {
-	vec2 L = Tex + vec2(-cellSize * .5f, 0.f);
-	vec2 R = Tex + vec2( cellSize * .5f, 0.f);
-	vec2 T = Tex + vec2(0.f,  cellSize * .5f);
-	vec2 B = Tex + vec2(0.f, -cellSize * .5f);
+	vec3 tex = vec3(Tex, cellSize * slice);
+	vec3 L = tex + vec3(-cellSize * .5f, 0.f, 0.f);
+	vec3 R = tex + vec3( cellSize * .5f, 0.f, 0f);
+	vec3 T = tex + vec3(0.f,  cellSize * .5f, 0.f);
+	vec3 B = tex + vec3(0.f, -cellSize * .5f, 0.f);
 
-	vec2 self =  texture(inVelocity, Tex).xy;
+	vec2 self =  texture(inVelocity, tex).xy;
 	vec2 L_vel = texture(inVelocity, L).xy;
 	vec2 R_vel = texture(inVelocity, R).xy;
 	vec2 T_vel = texture(inVelocity, T).xy;

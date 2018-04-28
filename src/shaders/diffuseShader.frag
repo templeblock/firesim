@@ -1,6 +1,7 @@
 #version 330 core
 
-uniform sampler2D inVelocity;
+uniform sampler3D inVelocity;
+uniform float slice;
 
 uniform float viscosity;
 uniform float cellSize;
@@ -11,14 +12,15 @@ out vec4 FragColor;
 
 void main()
 {
+	vec3 tex = vec3(Tex, slice * cellSize);
 	float alpha = (cellSize * cellSize)/(viscosity * timeStep);
 	float beta = 1.f/(4.f+ alpha);
-	vec2 L = clamp(Tex + vec2(-cellSize * .5, 0.f), vec2(0.f, 0.f), vec2(1.f, 1.f));
-	vec2 R = clamp(Tex + vec2( cellSize * .5, 0.f), vec2(0.f, 0.f), vec2(1.f, 1.f));
-	vec2 T = clamp(Tex + vec2(0.f, cellSize * .5f), vec2(0.f, 0.f), vec2(1.f, 1.f));
-	vec2 B = clamp(Tex + vec2(0.f, -cellSize * .5f), vec2(0.f, 0.f), vec2(1.f, 1.f));
+	vec3 L = clamp(tex + vec3(-cellSize * .5, 0.f, 0.f), 0.f, 1.f);
+	vec3 R = clamp(tex + vec3( cellSize * .5, 0.f, 0.f), 0.f, 1.f);
+	vec3 T = clamp(tex + vec3(0.f, cellSize * .5f, 0.f), 0.f, 1.f);
+	vec3 B = clamp(tex + vec3(0.f, -cellSize * .5f, 0.f), 0.f, 1.f);
 
-	vec3 self = texture(inVelocity, Tex).xyz;
+	vec3 self = texture(inVelocity, tex).xyz;
 	vec3 L_vel = texture(inVelocity, L).xyz;
 	vec3 R_vel = texture(inVelocity, R).xyz;
 	vec3 T_vel = texture(inVelocity, T).xyz;

@@ -1,6 +1,9 @@
 #version 330 core
 
-uniform sampler2D inTex;
+uniform sampler3D inTex;
+uniform float cellSize;
+uniform float slice;
+
 uniform vec4 center;
 uniform float radius;
 
@@ -11,7 +14,8 @@ out vec4 FragColor;
 
 void main()
 {
-	float orig = texture(inTex, Tex).x;
+	vec3 tex = vec3(Tex, slice * cellSize);
+	float orig = texture(inTex, tex).x;
 	float dist = distance(center.xyz, position);
 	float compare = step(dist, radius); //0 if radius < dist, 1 otherwise;
 	float res = min(orig + compare, 1.f);

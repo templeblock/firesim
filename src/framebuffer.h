@@ -14,8 +14,16 @@ public:
 
 	GLuint createFBO(int texID);
 
+	GLuint create3DFBO(int texID);
+
+	void switchLayer(int texID, int layer);
+
 	GLuint createEmptyTexture(int size);
 	GLuint createTexture(int size, float *data);
+
+	GLuint create3DTexture(int size, float * data);
+
+	GLuint create3DTexture(int size);
 
 	void changeTextureImage(int size, GLuint ID, float * data);
 

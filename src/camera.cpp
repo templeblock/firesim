@@ -43,6 +43,7 @@ mat4 Camera::getViewMatrix() {
 
 void Camera::move(vec3 moveBy) {
 	camPos += moveBy;
+	if (camPos.z < 0.1f) camPos.z = 0.1f;
 	calculateAxes();
 }
 

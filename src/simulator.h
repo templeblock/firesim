@@ -33,7 +33,7 @@ public:
 	void simulate(float time);
 
 	void drawContents();
-	void drawTexture();
+	void render();
 
 	/* Interaction */
 	void moveCamera(vec3 moveBy);
@@ -44,6 +44,12 @@ public:
 
 private:
 	
+	//Output Texture
+	GLuint screenTex, screenFBO;
+
+	//Object 2 World
+	float rotateX, rotateY;
+
 	bool normalized_renders;
 	Framebuffer *FBO;
 
@@ -59,8 +65,7 @@ private:
 	GLuint currentTex;
 
 	Camera *CAMERA;
-	Shader *gridShader;
-	Shader *cellShader;
+	Shader *renderShader, *cellShader;
 	Grid *grid;
 	
 	float SCR_HEIGHT;

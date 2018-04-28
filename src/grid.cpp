@@ -31,7 +31,7 @@ void Grid::init(int size, double timestep, double viscosity) {
 
 void Grid::buildShaders() {
 	/* Shaders */
-	defaultShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/defaultShader.frag");
+	defaultShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/default3DShader.frag");
 	borderShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/borderShader.frag");
 	fillShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/circleShader.frag");
 
@@ -47,36 +47,26 @@ void Grid::buildShaders() {
 	fuelShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/fuelShader.frag");
 	buoyancyShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/buoyancyShader.frag");
 }
+
 void Grid::buildTextures() {
 	/* FBO, Texture Setup */
 	FBO = new Framebuffer();
-	std::vector<float> fbo_vel = std::vector<float>((grid_size+2)*(grid_size+2)*3, 0.f);
-	velocityInputTex = FBO->createTexture(grid_size + 2, &fbo_vel[0]);
-	velocityInputFBO = FBO->createFBO(velocityInputTex);
+	std::vector<float> fbo_vel = std::vector<float>((grid_size+2)*(grid_size+2)*(grid_size+2)*3, 0.f);
 
-	advectionOutputTex = FBO->createTexture(grid_size + 2, &fbo_vel[0]);
-	advectionOutputFBO = FBO->createFBO(advectionOutputTex);
+	velocityInputTex = FBO->create3DTexture(grid_size + 2, &fbo_vel[0]);
+	advectionOutputTex = FBO->create3DTexture(grid_size + 2, &fbo_vel[0]);
+	diffusionOutputTex = FBO->create3DTexture(grid_size + 2, &fbo_vel[0]);
 
-	diffusionOutputTex = FBO->createTexture(grid_size + 2, &fbo_vel[0]);
-	diffusionOutputFBO = FBO->createFBO(diffusionOutputTex);
+	divergenceOutputTex = FBO->create3DTexture(grid_size + 2, &fbo_vel[0]);
+	pressureOutputTex = FBO->create3DTexture(grid_size + 2, &fbo_vel[0]);
 
-	divergenceOutputTex = FBO->createTexture(grid_size + 2, &fbo_vel[0]);
-	divergenceOutputFBO = FBO->createFBO(divergenceOutputTex);
+	temperatureTex = FBO->create3DTexture(grid_size + 2, &fbo_vel[0]);
+	fuelOutputTex = FBO->create3DTexture(grid_size + 2, &fbo_vel[0]);
 
-	pressureOutputTex = FBO->createTexture(grid_size + 2, &fbo_vel[0]);
-	pressureOutputFBO = FBO->createFBO(pressureOutputTex);
+	bufferTex = FBO->create3DTexture(grid_size + 2, &fbo_vel[0]);
+	buffer2Tex = FBO->create3DTexture(grid_size + 2, &fbo_vel[0]);
 
-	temperatureTex = FBO->createTexture(grid_size + 2, &fbo_vel[0]);
-	temperatureFBO = FBO->createFBO(temperatureTex);
-
-	fuelOutputTex = FBO->createTexture(grid_size + 2, &fbo_vel[0]);
-	fuelOutputFBO = FBO->createFBO(fuelOutputTex);
-
-	bufferTex = FBO->createTexture(grid_size + 2, &fbo_vel[0]);
-	bufferFBO = FBO->createFBO(bufferTex);
-
-	buffer2Tex = FBO->createTexture(grid_size + 2, &fbo_vel[0]);
-	buffer2FBO = FBO->createFBO(buffer2Tex);
+	writeFBO = FBO->create3DFBO(bufferTex);
 }
 
 /******************************/
@@ -164,7 +154,6 @@ void Grid::bindScreenVertices() {
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)(sizeof(float) * 3));
 	glEnableVertexAttribArray(1);
 
-
 	/* Unbind */
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
@@ -215,40 +204,49 @@ void Grid::stepOnce(int iterations) {
 
 	/* Setup */
 	glViewport(0, 0, grid_size + 2, grid_size + 2);
+	glBindFramebuffer(GL_FRAMEBUFFER, writeFBO);
 
 	/* Advect */
 	glBindVertexArray(VAO);
-	glBindFramebuffer(GL_FRAMEBUFFER, advectionOutputFBO);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	advectShader->use();
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, velocityInputTex);
+	glBindTexture(GL_TEXTURE_3D, velocityInputTex);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, velocityInputTex);
-	defaultShader->setInt("inVelocity", 0);
-	defaultShader->setInt("inQuantity", 1);
+	glBindTexture(GL_TEXTURE_3D, velocityInputTex);
+	advectShader->setInt("inVelocity", 0);
+	advectShader->setInt("inQuantity", 1);
 	advectShader->setFloat("cellSize", cell_size);
 	advectShader->setFloat("timeStep", timeStep);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	for (int i = 0; i < grid_size + 2; i++) {
+		advectShader->setFloat("slice", i);
+		FBO->switchLayer(advectionOutputTex, i);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
 
 	/* Write to Velocity Texture */
-	glBindFramebuffer(GL_FRAMEBUFFER, velocityInputFBO);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	defaultShader->use();
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, advectionOutputTex);
+	glBindTexture(GL_TEXTURE_3D, advectionOutputTex);
+	defaultShader->setFloat("cellSize", cell_size);
 	defaultShader->setInt("input_texture", 0);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	for (int i = 0; i < grid_size + 2; i++) {
+		defaultShader->setFloat("slice", i);
+		FBO->switchLayer(velocityInputTex, i);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
 
 	/* Diffusion Loop */
-	glBindVertexArray(VAO);
 	//Copy Vel to buffer
 	defaultShader->use();
-	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, velocityInputTex);
+	glBindTexture(GL_TEXTURE_3D, velocityInputTex);
 	defaultShader->setInt("input_texture", 0);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	for (int i = 0; i < grid_size + 2; i++) {
+		defaultShader->setFloat("slice", i);
+		FBO->switchLayer(bufferTex, i);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
 
 	diffuseShader->use();
 	diffuseShader->setFloat("viscosity", viscosity);
@@ -256,51 +254,64 @@ void Grid::stepOnce(int iterations) {
 	diffuseShader->setFloat("timeStep", timeStep);
 	for (int i = 0; i < iterations; i++) {
 		/* Buffer -> Diffusion */
-		glBindFramebuffer(GL_FRAMEBUFFER, diffusionOutputFBO);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, bufferTex);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindTexture(GL_TEXTURE_3D, bufferTex);
+		for (int i = 0; i < grid_size + 2; i++) {
+			diffuseShader->setFloat("slice", i);
+			FBO->switchLayer(diffusionOutputTex, i);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
 
 		/* Diffusion -> Buffer */
-		glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, diffusionOutputTex);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindTexture(GL_TEXTURE_3D, diffusionOutputTex);
+		for (int i = 0; i < grid_size + 2; i++) {
+			diffuseShader->setFloat("slice", i);
+			FBO->switchLayer(bufferTex, i);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
 	}
 
 	//Copy to Velocity
 	defaultShader->use();
-	glBindFramebuffer(GL_FRAMEBUFFER, velocityInputFBO);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, bufferTex);
+	glBindTexture(GL_TEXTURE_3D, bufferTex);
 	defaultShader->setInt("input_texture", 0);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	for (int i = 0; i < grid_size + 2; i++) {
+		defaultShader->setFloat("slice", i);
+		FBO->switchLayer(velocityInputTex, i);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
 
 	/* Unbind */
 	glBindVertexArray(0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(GL_TEXTURE_3D, 0);
 }
 
 void Grid::extForces(float time) {
 	glBindVertexArray(VAO);
+	glBindFramebuffer(GL_FRAMEBUFFER, writeFBO);
 
 	/* Copy Old Velocity to Buffer */
-	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	defaultShader->use();
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, velocityInputTex);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindTexture(GL_TEXTURE_3D, velocityInputTex);
+	for (int i = 0; i < grid_size + 2; i++) {
+		defaultShader->setFloat("slice", i);
+		FBO->switchLayer(bufferTex, i);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
+
 
 	/* Gaussian Splat*/
-	glBindFramebuffer(GL_FRAMEBUFFER, velocityInputFBO);
 	splatShader->use();
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, bufferTex);
+	glBindTexture(GL_TEXTURE_3D, bufferTex);
 	vec4 center = vec4(0.f, 0.f, 0.f, 0.f);
+	splatShader->setFloat("cellSize", cell_size);
 	splatShader->setVec4("center", center);
-	splatShader->setFloat("radius", 0.2f);
+	splatShader->setFloat("radius", 0.1f);
 	vec4 force = vec4(0.f, 0.f, 0.f, 0.f);
 	force.x = (rand() % 10) - 5;
 	force.y = (rand() % 5);
@@ -308,187 +319,228 @@ void Grid::extForces(float time) {
 	force /= (int) (rand() % 100);
 	splatShader->setVec4("force", force);
 	splatShader->setFloat("timeStep", timeStep);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	for (int i = 0; i < grid_size + 2; i++) {
+		splatShader->setFloat("slice", i);
+		FBO->switchLayer(velocityInputTex, i);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
 
 	/* Buoyancy */
 	//Copy to buffer
-	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
 	defaultShader->use();
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, velocityInputTex);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindTexture(GL_TEXTURE_3D, velocityInputTex);
+	for (int i = 0; i < grid_size + 2; i++) {
+		defaultShader->setFloat("slice", i);
+		FBO->switchLayer(bufferTex, i);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
 	//Buoyancy
-	glBindFramebuffer(GL_FRAMEBUFFER, velocityInputFBO);
 	buoyancyShader->use();
 	buoyancyShader->setFloat("speed", .02f);
 	buoyancyShader->setFloat("ambient", 0.0f);
+	buoyancyShader->setFloat("cellSize", cell_size);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, bufferFBO);
+	glBindTexture(GL_TEXTURE_3D, bufferTex);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, temperatureFBO);
+	glBindTexture(GL_TEXTURE_3D, temperatureTex);
 	buoyancyShader->setInt("inVelocity", 0);
 	buoyancyShader->setInt("inTemperature", 1);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	for (int i = 0; i < grid_size + 2; i++) {
+		buoyancyShader->setFloat("slice", i);
+		FBO->switchLayer(velocityInputTex, i);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
 
-	/* Directional */
-	//Copy to buffer
-	glBindVertexArray(VAO);
-	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
-	defaultShader->use();
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, velocityInputTex);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	//Directional
-	glBindFramebuffer(GL_FRAMEBUFFER, velocityInputFBO);
-	directionalShader->use();
-	directionalShader->setFloat("time", time + ((rand() % 10)/.5f));
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, bufferFBO);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	///* Directional */
+	////Copy to buffer
+	//glBindVertexArray(VAO);
+	//glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
+	//defaultShader->use();
+	//glActiveTexture(GL_TEXTURE0);
+	//glBindTexture(GL_TEXTURE_3D, velocityInputTex);
+	//glDrawArrays(GL_TRIANGLES, 0, 6);
+	////Directional
+	//glBindFramebuffer(GL_FRAMEBUFFER, velocityInputFBO);
+	//directionalShader->use();
+	//directionalShader->setFloat("time", time + ((rand() % 10)/.5f));
+	//glActiveTexture(GL_TEXTURE0);
+	//glBindTexture(GL_TEXTURE_3D, bufferFBO);
+	//glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	/* Unbind */
 	glBindVertexArray(0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(GL_TEXTURE_3D, 0);
 }
 
 void Grid::projectGPU(int iterations) {
 	/* Calculate Divergence */
 	glBindVertexArray(VAO);
-	glBindFramebuffer(GL_FRAMEBUFFER, divergenceOutputFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, writeFBO);
+
 	divergeShader->use();
 	divergeShader->setFloat("cellSize", cell_size);
 	divergeShader->setFloat("timeStep", timeStep);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, velocityInputTex);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindTexture(GL_TEXTURE_3D, velocityInputTex);
+	for (int i = 0; i < grid_size + 2; i++) {
+		divergeShader->setFloat("slice", i);
+		FBO->switchLayer(divergenceOutputTex, i);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
 
 	/* Pressure Loop */
-	glBindFramebuffer(GL_FRAMEBUFFER, pressureOutputFBO);
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	pressureShader->use();
 	pressureShader->setFloat("cellSize", cell_size);
 	pressureShader->setFloat("timeStep", timeStep);
 
 	for (int i = 0; i < iterations; i++) {
 		/* Copy Pressure to Buffer */
-		glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, pressureOutputTex);
+		glBindTexture(GL_TEXTURE_3D, pressureOutputTex);
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, divergenceOutputTex);
+		glBindTexture(GL_TEXTURE_3D, divergenceOutputTex);
 		pressureShader->setInt("inPressure", 0);
 		pressureShader->setInt("divergences", 1);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		for (int i = 0; i < grid_size + 2; i++) {
+			pressureShader->setFloat("slice", i);
+			FBO->switchLayer(bufferTex, i);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
 
 		/* Write to Pressure */
-		glBindFramebuffer(GL_FRAMEBUFFER, pressureOutputFBO);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, bufferTex);
+		glBindTexture(GL_TEXTURE_3D, bufferTex);
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, divergenceOutputTex);
+		glBindTexture(GL_TEXTURE_3D, divergenceOutputTex);
 		pressureShader->setInt("inPressure", 0);
 		pressureShader->setInt("divergences", 1);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		for (int i = 0; i < grid_size + 2; i++) {
+			pressureShader->setFloat("slice", i);
+			FBO->switchLayer(pressureOutputTex, i);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
 	}
 
 	/* Gradient Subtraction */
 	//Copy Velocity to Buffer
 	glBindVertexArray(VAO);
-	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
 	defaultShader->use();
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, velocityInputTex);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindTexture(GL_TEXTURE_3D, velocityInputTex);
+	for (int i = 0; i < grid_size + 2; i++) {
+		defaultShader->setFloat("slice", i);
+		FBO->switchLayer(bufferTex, i);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
 
 	//Subtract
-	glBindFramebuffer(GL_FRAMEBUFFER, velocityInputFBO);
 	gradientShader->use();
 	gradientShader->setFloat("cellSize", cell_size);
 	gradientShader->setFloat("timeStep", timeStep);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, bufferTex);
+	glBindTexture(GL_TEXTURE_3D, bufferTex);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, pressureOutputTex);
+	glBindTexture(GL_TEXTURE_3D, pressureOutputTex);
 	gradientShader->setInt("inVelocity", 0);
 	gradientShader->setInt("inPressure", 1);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	for (int i = 0; i < grid_size + 2; i++) {
+		gradientShader->setFloat("slice", i);
+		FBO->switchLayer(velocityInputTex, i);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
 
 	drawBoundary(0);
-	drawBoundary(1);
 
 	/* Unbind */
 	glBindVertexArray(0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(GL_TEXTURE_3D, 0);
 }
 
 void Grid::moveDye(float time) {
 	glBindVertexArray(VAO);
+	glBindFramebuffer(GL_FRAMEBUFFER, writeFBO);
 
 	/* Copy Old Fuel Distribution to Buffer */
-	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	defaultShader->use();
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, fuelOutputTex);
-	defaultShader->setInt("input_texture", 0);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindTexture(GL_TEXTURE_3D, fuelOutputTex);
+	for (int i = 0; i < grid_size + 2; i++) {
+		defaultShader->setFloat("slice", i);
+		FBO->switchLayer(bufferTex, i);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
 
 	/* Fill Source */
-	glBindFramebuffer(GL_FRAMEBUFFER, fuelOutputFBO);
 	fillShader->use();
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, bufferTex);
-	defaultShader->setInt("input_texture", 0);
+	glBindTexture(GL_TEXTURE_3D, bufferTex);
 	vec4 center = vec4(0.f, -0.7f, 0.f, 0.f);
 	fillShader->setVec4("center", center);
-	fillShader->setFloat("radius", 0.1f);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	fillShader->setFloat("radius", 0.2f);
+	fillShader->setFloat("cellSize", cell_size);
+	for (int i = 0; i < grid_size + 2; i++) {
+		fillShader->setFloat("slice", i);
+		FBO->switchLayer(fuelOutputTex, i);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
 
 	/* Copy Old Fuel Distribution to Buffer */
-	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	defaultShader->use();
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, fuelOutputTex);
+	glBindTexture(GL_TEXTURE_3D, fuelOutputTex);
 	defaultShader->setInt("input_texture", 0);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	for (int i = 0; i < grid_size + 2; i++) {
+		defaultShader->setFloat("slice", i);
+		FBO->switchLayer(bufferTex, i);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
 
 	/* Advect Fuel */
-	glBindFramebuffer(GL_FRAMEBUFFER, fuelOutputFBO);
 	advectShader->use();
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, velocityInputTex);
+	glBindTexture(GL_TEXTURE_3D, velocityInputTex);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, bufferTex);
+	glBindTexture(GL_TEXTURE_3D, bufferTex);
 	advectShader->setInt("inVelocity", 0);
 	advectShader->setInt("inQuantity", 1);
 	advectShader->setFloat("cellSize", cell_size);
 	advectShader->setFloat("timeStep", timeStep);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	for (int i = 0; i < grid_size + 2; i++) {
+		advectShader->setFloat("slice", i);
+		FBO->switchLayer(fuelOutputTex, i);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
 
 	/* Copy Old Fuel Distribution to Buffer */
-	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	defaultShader->use();
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, fuelOutputTex);
+	glBindTexture(GL_TEXTURE_3D, fuelOutputTex);
 	defaultShader->setInt("input_texture", 0);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	for (int i = 0; i < grid_size + 2; i++) {
+		defaultShader->setFloat("slice", i);
+		FBO->switchLayer(bufferTex, i);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
 
 	/* Consume Fuel */
-	glBindFramebuffer(GL_FRAMEBUFFER, fuelOutputFBO);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	fuelShader->use();
 	fuelShader->setFloat("timeStep", timeStep);
 	fuelShader->setFloat("rate", 0.5f);
+	fuelShader->setFloat("cellSize", cell_size);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, bufferTex);
+	glBindTexture(GL_TEXTURE_3D, bufferTex);
 	defaultShader->setInt("input_texture", 0);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	for (int i = 0; i < grid_size + 2; i++) {
+		fuelShader->setFloat("slice", i);
+		FBO->switchLayer(fuelOutputTex, i);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
 
 	/* Diffusion Loop */
 	glBindVertexArray(VAO);
@@ -496,28 +548,35 @@ void Grid::moveDye(float time) {
 	diffuseShader->setFloat("viscosity", viscosity);
 	diffuseShader->setFloat("cellSize", cell_size);
 	diffuseShader->setFloat("timeStep", timeStep);
-	for (int i = 0; i < 15; i++) {
+	for (int i = 0; i < 3; i++) {
 		/* Buffer -> Diffusion */
-		glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, fuelOutputTex);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindTexture(GL_TEXTURE_3D, fuelOutputTex);
+		for (int i = 0; i < grid_size + 2; i++) {
+			diffuseShader->setFloat("slice", i);
+			FBO->switchLayer(bufferTex, i);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
 
 		/* Diffusion -> Buffer */
-		glBindFramebuffer(GL_FRAMEBUFFER, fuelOutputFBO);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, bufferTex);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindTexture(GL_TEXTURE_3D, bufferTex);
+		for (int i = 0; i < grid_size + 2; i++) {
+			diffuseShader->setFloat("slice", i);
+			FBO->switchLayer(fuelOutputTex, i);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
 	}
 
 	/* Use new fuel values to update temperature */
 	defaultShader->use();
-	glBindFramebuffer(GL_FRAMEBUFFER, temperatureFBO);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, fuelOutputTex);
-	defaultShader->setInt("input_texture", 0);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindTexture(GL_TEXTURE_3D, fuelOutputTex);
+	for (int i = 0; i < grid_size + 2; i++) {
+		defaultShader->setFloat("slice", i);
+		FBO->switchLayer(temperatureTex, i);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
 
 	/* Unbind */
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -527,21 +586,25 @@ void Grid::moveDye(float time) {
 void Grid::drawBoundary(int type) {
 	/* Copy to Buffer */
 	glBindVertexArray(VAO);
-	defaultShader->use();
-	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glActiveTexture(GL_TEXTURE0);
+	glBindFramebuffer(GL_FRAMEBUFFER, writeFBO);
 
-	switch (type) {
-	case 0: //VELOCITY
-		glBindTexture(GL_TEXTURE_2D, velocityInputTex);
-		break;
-	case 1: //PRESSURE
-		glBindTexture(GL_TEXTURE_2D, pressureOutputTex);
-		break;
+	defaultShader->use();
+	//VELOCITY
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_3D, velocityInputTex);
+	for (int i = 0; i < grid_size + 2; i++) {
+		defaultShader->setFloat("slice", i);
+		FBO->switchLayer(bufferTex, i);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
-	defaultShader->setInt("input_texture", 0);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	//PRESSURE
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_3D, pressureOutputTex);
+	for (int i = 0; i < grid_size + 2; i++) {
+		defaultShader->setFloat("slice", i);
+		FBO->switchLayer(buffer2Tex, i);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
 
 	/* Draw Boundary */
 	vec4 top, bottom, left, right;
@@ -553,28 +616,42 @@ void Grid::drawBoundary(int type) {
 	glBindVertexArray(bVAO);
 	borderShader->use();
 	borderShader->setFloat("cellSize", cell_size);
+
+	//VELOCITY
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, bufferTex);
-	defaultShader->setInt("input_texture", 0);
-	switch (type) {
-	case 0: //VELOCITY
-		glBindFramebuffer(GL_FRAMEBUFFER, velocityInputFBO);
-		borderShader->setFloat("scalar", -1.f);
-		break;
-	case 1: //PRESSURE
-		glBindFramebuffer(GL_FRAMEBUFFER, pressureOutputFBO);
-		borderShader->setFloat("scalar", 1.f);
-		break;
+	glBindTexture(GL_TEXTURE_3D, bufferTex);
+	borderShader->setFloat("scalar", -1.f);
+	for (int i = 0; i < grid_size + 2; i++) {
+		borderShader->setFloat("slice", i);
+		FBO->switchLayer(velocityInputTex, i);
+
+		borderShader->setVec4("offset", left);
+		glDrawArrays(GL_LINES, 0, 2);
+		borderShader->setVec4("offset", top);
+		glDrawArrays(GL_LINES, 1, 2);
+		borderShader->setVec4("offset", right);
+		glDrawArrays(GL_LINES, 2, 2);
+		borderShader->setVec4("offset", bottom);
+		glDrawArrays(GL_LINES, 3, 3);
 	}
 
-	borderShader->setVec4("offset", left);
-	glDrawArrays(GL_LINES, 0, 2);
-	borderShader->setVec4("offset", top);
-	glDrawArrays(GL_LINES, 1, 2);
-	borderShader->setVec4("offset", right);
-	glDrawArrays(GL_LINES, 2, 2);
-	borderShader->setVec4("offset", bottom);
-	glDrawArrays(GL_LINES, 3, 3);
+	//PRESSURE
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_3D, buffer2Tex);
+	borderShader->setFloat("scalar", 1.f);
+	for (int i = 0; i < grid_size + 2; i++) {
+		borderShader->setFloat("slice", i);
+		FBO->switchLayer(pressureOutputTex, i);
+
+		borderShader->setVec4("offset", left);
+		glDrawArrays(GL_LINES, 0, 2);
+		borderShader->setVec4("offset", top);
+		glDrawArrays(GL_LINES, 1, 2);
+		borderShader->setVec4("offset", right);
+		glDrawArrays(GL_LINES, 2, 2);
+		borderShader->setVec4("offset", bottom);
+		glDrawArrays(GL_LINES, 3, 3);
+	}
 
 	/* Unbind */
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

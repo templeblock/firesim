@@ -1,6 +1,9 @@
 #version 330 core
 
-uniform sampler2D inTex;
+uniform sampler3D inTex;
+uniform float slice;
+uniform float cellSize;
+
 uniform vec4 center;
 uniform float radius;
 uniform vec4 force;
@@ -13,7 +16,8 @@ out vec4 FragColor;
 
 void main()
 {
-	vec2 orig = texture(inTex, Tex).xy;
+	vec3 tex = vec3(Tex, slice * cellSize);
+	vec2 orig = texture(inTex, tex).xy;
 	float exponent = ((position.x - center.x) * (position.x - center.x)) + ((position.y - center.y) * (position.y - center.y));
 	exponent = exponent/radius;
 	vec2 splat = force.xy * timeStep * exp(exponent);

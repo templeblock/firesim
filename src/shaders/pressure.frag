@@ -1,7 +1,8 @@
 #version 330 core
 
-uniform sampler2D inPressure;
-uniform sampler2D divergences;
+uniform sampler3D inPressure;
+uniform sampler3D divergences;
+uniform float slice;
 
 uniform float cellSize;
 uniform float timeStep;
@@ -11,16 +12,17 @@ out vec4 FragColor;
 
 void main()
 {
+	vec3 tex = vec3(Tex, cellSize * slice);
 	float alpha = cellSize * cellSize;
 	float beta = .25f;
-	float b = texture(divergences, Tex).x;
+	float b = texture(divergences, tex).x;
 
-	vec2 L = clamp(Tex + vec2(-cellSize * .5f, 0.f), vec2(0.f, 0.f), vec2(1.f, 1.f));
-	vec2 R = clamp(Tex + vec2( cellSize * .5f, 0.f), vec2(0.f, 0.f), vec2(1.f, 1.f));
-	vec2 T = clamp(Tex + vec2(0.f, cellSize * .5f), vec2(0.f, 0.f), vec2(1.f, 1.f));
-	vec2 B = clamp(Tex + vec2(0.f, -cellSize * .5f), vec2(0.f, 0.f), vec2(1.f, 1.f));
+	vec3 L = clamp(tex + vec3(-cellSize * .5f, 0.f, 0.f), 0.f, 1.f);
+	vec3 R = clamp(tex + vec3( cellSize * .5f, 0.f, 0.f), 0.f, 1.f);
+	vec3 T = clamp(tex + vec3(0.f, cellSize * .5f, 0.f), 0.f, 1.f);
+	vec3 B = clamp(tex + vec3(0.f, -cellSize * .5f, 0.f), 0.f, 1.f);
 
-	float self = texture(inPressure, Tex).x;
+	float self = texture(inPressure, tex).x;
 	float fL = texture(inPressure, L).x;
 	float fR = texture(inPressure, R).x;
 	float fT = texture(inPressure, T).x;
