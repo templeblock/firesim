@@ -74,7 +74,7 @@ private:
 	//Shaders
 	Shader *defaultShader, *borderShader, *fillShader;
 	Shader *advectShader, *diffuseShader, *divergeShader, *pressureShader, *gradientShader;
-	Shader *directionalShader, *splatShader, *buoyancyShader, *fuelShader;
+	Shader *directionalShader, *splatShader, *buoyancyShader, *fuelShader, *colorShader;
 
 	GLuint VBO, VAO; //Screen vertices
 	GLuint bVBO, bVAO; //Border vertices
@@ -83,9 +83,10 @@ private:
 	//Vector value textures - RGB correspond to XYZ
 	GLuint centroidsFBO, velocityInputFBO, advectionOutputFBO, diffusionOutputFBO;
 	GLuint centroidsTex, velocityInputTex, advectionOutputTex, diffusionOutputTex;
-	
+
 	//Fire sim textures
 	GLuint fuelOutputFBO, fuelOutputTex;
+	GLuint colorOutputFBO, colorOutputTex;
 	GLuint buoyancyOutputFBO, temperatureFBO;
 	GLuint buoyancyOutputTex, temperatureTex;
 
