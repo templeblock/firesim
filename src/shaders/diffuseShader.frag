@@ -14,7 +14,7 @@ void main()
 {
 	vec3 tex = vec3(Tex, slice * cellSize);
 	float alpha = (cellSize * cellSize)/(viscosity * timeStep);
-	float beta = 1.f/(4.f+ alpha);
+	float beta = 1.f/(4.f + alpha);
 	vec3 L = clamp(tex + vec3(-cellSize * .5, 0.f, 0.f), 0.f, 1.f);
 	vec3 R = clamp(tex + vec3( cellSize * .5, 0.f, 0.f), 0.f, 1.f);
 	vec3 T = clamp(tex + vec3(0.f, cellSize * .5f, 0.f), 0.f, 1.f);

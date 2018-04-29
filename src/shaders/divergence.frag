@@ -14,7 +14,7 @@ void main()
 	vec3 tex = vec3(Tex, cellSize * slice);
 
 	vec3 L = clamp(tex + vec3(-cellSize * .5f, 0.f, 0.f), 0.f, 1.f);
-	vec3 R = clamp(tex + vec3( cellSize * .5f, 0.f, 0f), 0.f, 1.f);
+	vec3 R = clamp(tex + vec3( cellSize * .5f, 0.f, 0.f), 0.f, 1.f);
 	vec3 T = clamp(tex + vec3(0.f,  cellSize * .5f, 0.f), 0.f, 1.f);
 	vec3 B = clamp(tex + vec3(0.f, -cellSize * .5f, 0.f), 0.f, 1.f);
 	vec3 U = clamp(tex + vec3(0.f, 0.f,  cellSize * .5f), 0.f, 1.f); //front
