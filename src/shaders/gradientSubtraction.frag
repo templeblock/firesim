@@ -12,7 +12,7 @@ out vec4 FragColor;
 
 void main()
 {
-	vec3 tex = vec3 (Tex, cellSize * slice);
+	vec3 tex = vec3 (Tex, cellSize * .5f  * slice);
 	vec3 L = clamp(tex + vec3(-cellSize * .5f, 0.f, 0.f), 0.f, 1.f);
 	vec3 R = clamp(tex + vec3( cellSize * .5f, 0.f, 0.f), 0.f, 1.f);
 	vec3 T = clamp(tex + vec3(0.f,  cellSize * .5f, 0.f), 0.f, 1.f);
@@ -20,12 +20,12 @@ void main()
 	vec3 U = clamp(tex + vec3(0.f, 0.f,  cellSize * .5f), 0.f, 1.f);
 	vec3 D = clamp(tex + vec3(0.f, 0.f, -cellSize * .5f), 0.f, 1.f);
 
-	float fL = texture(inPressure, L).y;
-	float fR = texture(inPressure, R).y;
-	float fT = texture(inPressure, T).y;
-	float fB = texture(inPressure, B).y;
-	float fU = texture(inPressure, U).y;
-	float fD = texture(inPressure, D).y;
+	float fL = texture(inPressure, L).x;
+	float fR = texture(inPressure, R).x;
+	float fT = texture(inPressure, T).x;
+	float fB = texture(inPressure, B).x;
+	float fU = texture(inPressure, U).x;
+	float fD = texture(inPressure, D).x;
 
 	vec3 vel = texture(inVelocity, tex).xyz;
   

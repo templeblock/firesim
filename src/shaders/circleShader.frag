@@ -14,10 +14,11 @@ out vec4 FragColor;
 
 void main()
 {
-	vec3 tex = vec3(Tex, slice * cellSize);
+	vec3 tex = vec3(Tex, slice * cellSize * .5f);
 	float orig = texture(inTex, tex).x;
-	float dist = distance(center.xyz, position);
+	vec3 pos = vec3(position.xy, (slice * cellSize) - 1.f);
+	float dist = distance(center.xyz, pos);
 	float compare = step(dist, radius); //0 if radius < dist, 1 otherwise;
-	float res = min(orig + compare, 1.f);
+	float res = min(orig + compare, 1.0f);
 	FragColor = vec4(res, 0.f, 0.f, 1.f);
 }

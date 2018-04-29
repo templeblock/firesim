@@ -70,6 +70,7 @@ private:
 	
 	float SCR_HEIGHT;
 	float SCR_WIDTH;
+	float resolution;
 };
 
 #endif

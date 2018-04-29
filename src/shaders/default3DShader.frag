@@ -9,5 +9,5 @@ out vec4 FragColor;
 
 void main()
 {
-	FragColor = texture(input_texture, vec3(Tex, slice * cellSize));
+	FragColor = texture(input_texture, vec3(Tex, slice * cellSize * .5f ));
 }

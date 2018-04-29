@@ -11,7 +11,7 @@ out vec4 FragColor;
 
 void main()
 {
-	vec3 tex = vec3(Tex, cellSize * slice);
+	vec3 tex = vec3(Tex, cellSize * .5f  * slice);
 
 	vec3 L = clamp(tex + vec3(-cellSize * .5f, 0.f, 0.f), 0.f, 1.f);
 	vec3 R = clamp(tex + vec3( cellSize * .5f, 0.f, 0.f), 0.f, 1.f);

@@ -12,9 +12,9 @@ out vec4 FragColor;
 
 void main()
 {
-	vec3 tex = vec3(Tex, cellSize * slice);
+	vec3 tex = vec3(Tex, cellSize * .5f * slice);
 	float alpha = cellSize * cellSize;
-	float beta = .25f;
+	float beta = 1.f/6.f;
 	float b = texture(divergences, tex).x;
 
 	vec3 L = clamp(tex + vec3(-cellSize * .5f, 0.f, 0.f), 0.f, 1.f);

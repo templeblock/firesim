@@ -16,12 +16,12 @@ out vec4 FragColor;
 
 void main()
 {
-	vec3 tex = vec3(Tex, slice * cellSize);
-	vec2 orig = texture(inTex, tex).xy;
-	float exponent = ((position.x - center.x) * (position.x - center.x)) + ((position.y - center.y) * (position.y - center.y));
+	vec3 tex = vec3(Tex, slice * cellSize * .5f);
+	vec3 orig = texture(inTex, tex).xyz;
+	float exponent = ((position.x - center.x) * (position.x - center.x)) + ((position.y - center.y) * (position.y - center.y)) + ((slice * cellSize - 1.f - center.z) * (slice * cellSize - 1.f - center.z));
 	exponent = exponent/radius;
-	vec2 splat = force.xy * timeStep * exp(exponent);
+	vec3 splat = force.xyz * timeStep * exp(exponent);
 	splat = clamp(splat, -.1f, .1f);
-	vec2 res = clamp(orig + splat, -1.f, 1.f);
-	FragColor = vec4(res, 0.f, 1.f);
+	vec3 res = clamp(orig + splat, -1.f, 1.f);
+	FragColor = vec4(res, 1.f);
 }

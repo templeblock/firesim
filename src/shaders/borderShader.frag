@@ -12,8 +12,7 @@ out vec4 FragColor;
 
 void main()
 {
-	vec2 newTex = Tex + offset.xy;
-	vec3 tex = vec3(newTex, cellSize * slice);
-	vec3 res = texture(inTex, tex).xyz * scalar;
+	vec3 newTex = vec3(Tex, cellSize * .5f * slice) + offset.xyz;
+	vec3 res = texture(inTex, newTex).xyz * scalar;
 	FragColor = vec4(res, 1.f);
 }

@@ -53,7 +53,7 @@ void main()
 	float lower = min(min(norm.x, norm.y), norm.z);
 
 	while (upper <= 1.f && lower >= 0.f) {
-		accumulate.rgb += texture(inTexture, norm.xyz).rrr * .01;
+		accumulate.rgb += texture(inTexture, norm.xyz).rgb * .01;
 		tangentPoint += dir * cellSize;
 		norm = tangentPoint + vec4(1.f, 1.f, 1.f, 1.f);
 		norm /= 2.f;
@@ -64,5 +64,5 @@ void main()
 	//Find Resulting Color
 	vec3 color = texture(inTexture, norm.xyz).rgb;
 
-	FragColor = vec4((color + accumulate) * noSect, 0.f);
+	FragColor = vec4(accumulate * noSect, 0.f);
 }

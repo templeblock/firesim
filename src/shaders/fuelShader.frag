@@ -12,9 +12,9 @@ out vec4 FragColor;
 
 void main()
 {
-	vec3 tex = vec3(Tex, cellSize * slice);
+	vec3 tex = vec3(Tex, cellSize * slice * .5f);
 	float res = texture(inQuantity, tex).x;
-	res = res - rate * timeStep;
-	res = clamp (res, -1.f, 1.f);
+	res = res - (rate * timeStep);
+	res = clamp (res, 0.f, 1.0f);
 	FragColor = vec4(res, 0.f, 0.f, 1.f);
 }

@@ -14,7 +14,8 @@ void Simulator::init() {
 
 	/* Create new grid */
 	grid = new Grid();
-	grid->init(100, 0.1, 1);
+	grid->init(100, 0.1f, 1);
+	resolution = 800;
 
 	/* Create Camera and Set Projection Matrix */
 	CAMERA = new Camera();
@@ -22,10 +23,13 @@ void Simulator::init() {
 
 	/* BUILD & COMPILE SHADERS */
 	cellShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/defaultShader.frag");
-	renderShader = new Shader("../src/shaders/texShader.vert", "../src/shaders/renderShader.frag");
+	renderShader = new Shader("../src/shaders/shader.vert", "../src/shaders/renderShaderFlat.frag");
 
 	/*Misc*/
 	glEnable(GL_DEPTH_TEST);
+	std::vector<float> buffer = std::vector<float>(resolution * resolution * 3, 0.f);
+	screenTex = FBO->createTexture(resolution, &buffer[0]);
+	screenFBO = FBO->createFBO(screenTex);
 
 	bindScreenVertices();
 
@@ -50,7 +54,6 @@ void Simulator::changeScrDimensions(int width, int height) {
 	SCR_HEIGHT = (float) height;
 
 	CAMERA->changeScreenDimens(SCR_WIDTH, SCR_HEIGHT);
-	glViewport(0, 0, (unsigned int) SCR_WIDTH, (unsigned int)SCR_HEIGHT);
 
 	//Projection matrix (Camera to screen)
 	glm::mat4 c2s;
@@ -60,11 +63,6 @@ void Simulator::changeScrDimensions(int width, int height) {
 	cellShader->setMat4("projection", c2s);
 	renderShader->use();
 	renderShader->setMat4("projection", c2s);
-
-	int size = min(height, width);
-	std::vector<float> buffer = std::vector<float> (size * size * 3, 0.f);
-	screenTex = FBO->createTexture(800, &buffer[0]);
-	screenFBO = FBO->createFBO(screenTex);
 }
 
 void Simulator::bindScreenVertices() {
@@ -102,9 +100,9 @@ void Simulator::bindScreenVertices() {
 }
 
 void Simulator::simulate(float time) {
-	grid->stepOnce(5);
+	grid->stepOnce(0);
 	grid->extForces(time);
-	grid->projectGPU(10);
+	grid->projectGPU(8);
 	grid->moveDye(time);
 	drawContents();
 }
@@ -128,8 +126,7 @@ void Simulator::drawContents() {
 }
 
 void Simulator::render() {
-	int size = min(SCR_WIDTH, SCR_HEIGHT);
-	glViewport(0, 0, size, size);
+	glViewport(0, 0, resolution, resolution);
 	glBindVertexArray(screenVAO);
 	glBindFramebuffer(GL_FRAMEBUFFER, screenFBO);
 	/* CLEAR PREVIOUS */
@@ -141,7 +138,8 @@ void Simulator::render() {
 	glm::mat4 w2c;
 	w2c = CAMERA->getViewMatrix();
 	glm::mat4 o2w;
-	o2w = translate(o2w, vec3(0.f, 0.f, CAMERA->camPos.z - 1.f));
+	o2w = translate(o2w, vec3(0.f, 0.f, 0.f));
+	//o2w = translate(o2w, vec3(0.f, 0.f, CAMERA->camPos.z - 3.f));
 	glm::mat4 obj;
 	obj = rotate(obj, radians(rotateY), vec3(1.f, 0.f, 0.f));
 	obj = rotate(obj, radians(rotateX), vec3(0.f, 1.f, 0.f));
