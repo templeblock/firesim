@@ -31,8 +31,8 @@ void main()
 	vec3 LT = mix(texture(inQuantity, LTU).rgb, texture(inQuantity, LTD).rgb, .5f);
 	vec3 RT = mix(texture(inQuantity, RTU).rgb, texture(inQuantity, RTD).rgb, .5f);
 	
-	vec3 L = mix(texture(inQuantity, LB).rgb, texture(inQuantity, LT).rgb, .5f);
-	vec3 R = mix(texture(inQuantity, RB).rgb, texture(inQuantity, RT).rgb, .5f);
+	vec3 L = mix(LB, LT, .5f);
+	vec3 R = mix(RB, RT, .5f);
 
 	vec3 res = mix(L, R, 0.5f);
 

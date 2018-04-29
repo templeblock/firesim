@@ -36,8 +36,8 @@ void main()
 	vec3 LT = mix(texture(inQuantity, LTU).rgb, texture(inQuantity, LTD).rgb, .5f);
 	vec3 RT = mix(texture(inQuantity, RTU).rgb, texture(inQuantity, RTD).rgb, .5f);
 	
-	vec3 L = mix(texture(inQuantity, LB).rgb, texture(inQuantity, LT).rgb, .5f);
-	vec3 R = mix(texture(inQuantity, RB).rgb, texture(inQuantity, RT).rgb, .5f);
+	vec3 L = mix(LB, LT, .5f);
+	vec3 R = mix(RB, RT, .5f);
 
 	vec3 res = mix(L, R, 0.5f);
 
@@ -60,8 +60,8 @@ void main()
 	vec3 LT2 = mix(texture(inQuantity, LTU2).rgb, texture(inQuantity, LTD2).rgb, .5f);
 	vec3 RT2 = mix(texture(inQuantity, RTU2).rgb, texture(inQuantity, RTD2).rgb, .5f);
 	
-	vec3 L2 = mix(texture(inQuantity, LB2).rgb, texture(inQuantity, LT2).rgb, .5f);
-	vec3 R2 = mix(texture(inQuantity, RB2).rgb, texture(inQuantity, RT2).rgb, .5f);
+	vec3 L2 = mix(LB2, LT2, .5f);
+	vec3 R2 = mix(RB2, RT2, .5f);
 
 	vec3 res2 = mix(L2, R2, 0.5f);
 
