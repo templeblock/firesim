@@ -351,22 +351,22 @@ void Grid::extForces(float time) {
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 
-	/* Color (based on temperature) */
-	//Copy to buffer
-	glBindVertexArray(VAO);
-	glBindFramebuffer(GL_FRAMEBUFFER, writeFBO);
-	defaultShader->use();
-	glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_3D, temperatureTex); output of render flat?
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	//Color
-	colorShader->use();
-	colorShader->setInt("inTemperature", 1);
-	for (int i = 0; i < grid_size + 2; i++) {
-		colorShader->setFloat("slice", i);
-		FBO->switchLayer(colorOutputTex, i);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-	}
+	///* Color (based on temperature) */
+	////Copy to buffer
+	//glBindVertexArray(VAO);
+	//glBindFramebuffer(GL_FRAMEBUFFER, writeFBO);
+	//defaultShader->use();
+	//glActiveTexture(GL_TEXTURE0);
+	////glBindTexture(GL_TEXTURE_3D, temperatureTex); output of render flat?
+	//glDrawArrays(GL_TRIANGLES, 0, 6);
+	////Color
+	//colorShader->use();
+	//colorShader->setInt("inTemperature", 1);
+	//for (int i = 0; i < grid_size + 2; i++) {
+	//	colorShader->setFloat("slice", i);
+	//	FBO->switchLayer(colorOutputTex, i);
+	//	glDrawArrays(GL_TRIANGLES, 0, 6);
+	//}
 
 	///* Directional */
 	////Copy to buffer
