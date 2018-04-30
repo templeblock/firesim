@@ -19,7 +19,17 @@ void main()
 		tex.z += cellSize * .5f;
 	}
 
-	accumulate *= cellSize * 1.5f;
+	accumulate *= cellSize * 100.f;
 
-	FragColor = vec4(accumulate, 1.f);
+	float temp = accumulate.r;
+	temp = temp * 1.2f;
+	float red = -85.2 + 26.7 * temp + -.53 * temp * temp + .00253 * temp * temp * temp;
+	float green = -42.7 + 8.31 * temp + 0.0711 * temp * temp + -.00253 * temp * temp * temp;
+	float blue = -749.f + 84.7 * temp + -2.388 * temp * temp + .0243 * temp * temp * temp + -.000075 * temp * temp * temp * temp;
+	blue *= .5f;
+	vec3 color = vec3 (red, green, blue);
+	color = clamp (color, 0.f, 255.f);
+	color = color/255.f;
+
+	FragColor = vec4(color, 1.f);
 }

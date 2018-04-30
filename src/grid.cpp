@@ -339,7 +339,7 @@ void Grid::extForces(float time) {
 	}
 	//Buoyancy
 	buoyancyShader->use();
-	buoyancyShader->setFloat("speed", .1f);
+	buoyancyShader->setFloat("speed", .2f);
 	buoyancyShader->setFloat("ambient", 0.0f);
 	buoyancyShader->setFloat("cellSize", cell_size);
 	glActiveTexture(GL_TEXTURE0);
@@ -475,18 +475,20 @@ void Grid::moveDye(float time) {
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 
-	/* Consume Fuel */
-	fuelShader->use();
-	fuelShader->setFloat("timeStep", timeStep);
-	fuelShader->setFloat("rate", 0.25f);
-	fuelShader->setFloat("cellSize", cell_size);
+	/* Fill Source */
+	fillShader->use();
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_3D, bufferTex);
+	vec4 center = vec4(0.f, -0.75f, 0.f, 0.f);
+	fillShader->setVec4("center", center);
+	fillShader->setFloat("radius", 0.2f);
+	fillShader->setFloat("cellSize", cell_size);
 	for (int i = 0; i < grid_size + 2; i++) {
-		fuelShader->setFloat("slice", i);
+		fillShader->setFloat("slice", i);
 		FBO->switchLayer(fuelOutputTex, i);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
+
 
 	/* Copy Old Fuel Distribution to Buffer */
 	defaultShader->use();
@@ -498,16 +500,15 @@ void Grid::moveDye(float time) {
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 
-	/* Fill Source */
-	fillShader->use();
+	/* Consume Fuel */
+	fuelShader->use();
+	fuelShader->setFloat("timeStep", timeStep);
+	fuelShader->setFloat("rate", 0.15f);
+	fuelShader->setFloat("cellSize", cell_size);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_3D, bufferTex);
-	vec4 center = vec4(0.f, -0.75f, 0.f, 0.f);
-	fillShader->setVec4("center", center);
-	fillShader->setFloat("radius", 0.2f);
-	fillShader->setFloat("cellSize", cell_size);
 	for (int i = 0; i < grid_size + 2; i++) {
-		fillShader->setFloat("slice", i);
+		fuelShader->setFloat("slice", i);
 		FBO->switchLayer(fuelOutputTex, i);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
