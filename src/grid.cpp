@@ -45,7 +45,6 @@ void Grid::buildShaders() {
 	directionalShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/directionalShader.frag");
 	splatShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/splatShader.frag");
 	fuelShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/fuelShader.frag");
-	colorShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/colorShader.frag");
 	buoyancyShader = new Shader("../src/shaders/defaultShader.vert", "../src/shaders/buoyancyShader.frag");
 }
 
@@ -66,8 +65,6 @@ void Grid::buildTextures() {
 
 	bufferTex = FBO->create3DTexture(grid_size + 2, &fbo_vel[0]);
 	buffer2Tex = FBO->create3DTexture(grid_size + 2, &fbo_vel[0]);
-
-	colorOutputTex = FBO->createTexture(grid_size + 2, &fbo_vel[0]);
 
 	writeFBO = FBO->create3DFBO(bufferTex);
 }
@@ -351,6 +348,23 @@ void Grid::extForces(float time) {
 	for (int i = 0; i < grid_size + 2; i++) {
 		buoyancyShader->setFloat("slice", i);
 		FBO->switchLayer(velocityInputTex, i);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
+
+	/* Color (based on temperature) */
+	//Copy to buffer
+	glBindVertexArray(VAO);
+	glBindFramebuffer(GL_FRAMEBUFFER, writeFBO);
+	defaultShader->use();
+	glActiveTexture(GL_TEXTURE0);
+	//glBindTexture(GL_TEXTURE_3D, temperatureTex); output of render flat?
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	//Color
+	colorShader->use();
+	colorShader->setInt("inTemperature", 1);
+	for (int i = 0; i < grid_size + 2; i++) {
+		colorShader->setFloat("slice", i);
+		FBO->switchLayer(colorOutputTex, i);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 
@@ -675,6 +689,8 @@ void Grid::drawBoundary(int type) {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindVertexArray(0);
 }
+
+/* ####################################### */
 
 /* CPU COMPUTATIONS */
 void Grid::calculateVelocity(float time) {
