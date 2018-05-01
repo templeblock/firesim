@@ -17,7 +17,7 @@ void Simulator::init() {
 	/* Create new grid */
 	grid = new Grid();
 	grid->init(100, 0.1f, 1);
-	resolution = 800;
+	resolution = 1000;
 
 	/* Create Camera and Set Projection Matrix */
 	CAMERA = new Camera();
