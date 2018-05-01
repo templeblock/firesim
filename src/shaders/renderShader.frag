@@ -3,6 +3,7 @@
 uniform sampler3D inTexture;
 uniform float cellSize;
 uniform mat4 object;
+uniform int fireColor;
 
 uniform vec4 camPos;
 
@@ -43,26 +44,75 @@ void main()
 
 	//Tangent Point
 	vec4 tangentPoint = o + (dir * tmin);
-	vec4 norm = clamp (tangentPoint, vec4(-1.f, -1.f, -1.f, 1.f), vec4(1.f, 1.f, 1.f, 1.f));
-	norm += vec4(1.f, 1.f, 1.f, 1.f);
-	norm /= 2.f;
+	vec4 tex = clamp (tangentPoint, vec4(-1.f, -1.f, -1.f, 1.f), vec4(1.f, 1.f, 1.f, 1.f));
+	tex += vec4(1.f, 1.f, 1.f, 1.f);
+	tex *= .5f;
 
 	vec3 accumulate = vec3(0.f, 0.f, 0.f);
 
-	float upper = max(max(norm.x, norm.y), norm.z);
-	float lower = min(min(norm.x, norm.y), norm.z);
+	float upper = max(max(tex.x, tex.y), tex.z);
+	float lower = min(min(tex.x, tex.y), tex.z);
+
+	int samples;
 
 	while (upper <= 1.f && lower >= 0.f) {
-		accumulate.rgb += texture(inTexture, norm.xyz).rgb * .01;
+		accumulate.rgb += texture(inTexture, tex.xyz).rgb;
 		tangentPoint += dir * cellSize;
-		norm = tangentPoint + vec4(1.f, 1.f, 1.f, 1.f);
-		norm /= 2.f;
-		upper = max(max(norm.x, norm.y), norm.z);
-		lower = min(min(norm.x, norm.y), norm.z);
+		tex = tangentPoint + vec4(1.f, 1.f, 1.f, 1.f);
+		tex *= .5f;
+		samples++;
+		upper = max(max(tex.x, tex.y), tex.z);
+		lower = min(min(tex.x, tex.y), tex.z);
 	}
 
-	//Find Resulting Color
-	vec3 color = texture(inTexture, norm.xyz).rgb;
+	accumulate *= 90.f/samples;
 
-	FragColor = vec4(accumulate * noSect, 0.f);
+	float temp = accumulate.r;
+	float red, green, blue;
+
+	switch (fireColor) {
+	case 0:
+		//REGULAR FLAME	
+		red = -119.2 + 31.7 * temp + -.617 * temp * temp + .00282 * temp * temp * temp;
+		green = -252 + 32.3 * temp - 0.476 * temp * temp;
+		blue = -540.f + 57.9f * temp - 1.27 * temp * temp + .00808 * temp * temp * temp;
+		red *= 1.7f;
+		green *= 1.5f;
+		break;
+	case 1:
+		//PURPLE FLAME
+		red = -85.2 + 26.7 * temp + -.53 * temp * temp + .00253 * temp * temp * temp;
+		blue = -42.7 + 8.31 * temp + 0.0711 * temp * temp + -.00253 * temp * temp * temp;
+		green = -749.f + 84.7 * temp + -2.388 * temp * temp + .0243 * temp * temp * temp + -.000075 * temp * temp * temp * temp;
+		red *= 1.4f;
+		blue *= 2.5f;
+		break;
+	case 2:	
+		//TURQUOISE FLAME
+		red = -540.f + 57.9f * temp - 1.27 * temp * temp + .00808 * temp * temp * temp;
+		green = -252 + 32.3 * temp - 0.476 * temp * temp;
+		blue = -119.2 + 31.7 * temp + -.617 * temp * temp + .00282 * temp * temp * temp;
+		blue *= 1.7f;
+		green *= 1.5f;
+		break;
+	case 3:
+		//REGULAR FLAME	
+		green = -119.2 + 31.7 * temp + -.617 * temp * temp + .00282 * temp * temp * temp;
+		red = -252 + 32.3 * temp - 0.476 * temp * temp;
+		blue = -540.f + 57.9f * temp - 1.27 * temp * temp + .00808 * temp * temp * temp;
+		green *= 1.7f;
+		red *= 1.5f;
+		break;
+	case 4:
+		//NO CHANGE
+		red = accumulate.r;
+		green = accumulate.g;
+		blue = accumulate.b;
+	}
+
+	vec3 color = vec3 (red, green, blue);
+	color = clamp (color, 0.f, 255.f);
+	color = color/255.f;
+
+	FragColor = vec4(color, 0.f);
 }

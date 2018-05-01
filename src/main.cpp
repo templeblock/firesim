@@ -15,6 +15,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -26,8 +27,9 @@ float deltaTime = 0;
 float lastFrame = 0;
 double lastMousePosX;
 double lastMousePosY;
-
 bool drag = false;
+bool rightDrag = false;
+
 
 int main(void) {
 
@@ -61,6 +63,7 @@ int main(void) {
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
+	glfwSetKeyCallback(window, key_callback);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -87,18 +90,18 @@ int main(void) {
 		lastFrame = currentFrame;
 		frame++;
 
-		if (drag) {
-			double lastPosX = lastMousePosX;
-			double lastPosY = lastMousePosY;
-			glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
-			simulation->rotateCamera(lastPosX - lastMousePosX, lastPosY - lastMousePosY);
-		}
-
 		/**Input**/
 		processInput(window);
 
+		double lastPosX = lastMousePosX;
+		double lastPosY = lastMousePosY;
+		glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
+		if (rightDrag) {
+			simulation->rotateCamera(lastPosX - lastMousePosX, lastPosY - lastMousePosY);
+		}
+
 		/** Render **/
-		simulation->simulate(currentFrame);
+		simulation->simulate(currentFrame, vec2(lastMousePosX/SCR_WIDTH, -lastMousePosY / SCR_HEIGHT), drag);
 
 		/**Swap buffers & poll IO events**/
 		glfwSwapBuffers(window);
@@ -115,6 +118,18 @@ void processInput(GLFWwindow *window) {
 		glfwSetWindowShouldClose(window, true);
 
 	float camSpeed = 2.5f * deltaTime;
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (key == GLFW_KEY_C && action == GLFW_PRESS)
+		simulation->toggleFlameColor();
+	if (key == GLFW_KEY_T && action == GLFW_PRESS)
+		simulation->toggleTexture();
+	if (key == GLFW_KEY_R && action == GLFW_PRESS)
+		simulation->resetCamera();
+	if (key == GLFW_KEY_S && action == GLFW_PRESS)
+		simulation->toggleScene();
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -139,5 +154,12 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 	}
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
 		drag = false;
+	}
+	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
+		rightDrag = true;
+		glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
+	}
+	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
+		rightDrag = false;
 	}
 }

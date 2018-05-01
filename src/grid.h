@@ -29,7 +29,7 @@ public:
 	void stepOnce(int iterations);
 	void extForces(float time);
 	void projectGPU(int iterations);
-	void moveDye(float time);
+	void moveDye(float time, vec4 mousePos, bool click);
 	void drawBoundary(int type);
 
 	// Old: CPU funcs*
@@ -52,6 +52,7 @@ public:
 	int grid_size;
 	float cell_size;
 	double timeStep;
+	int scene;
 	/* Fluid Settings */
 	double viscosity;
 
@@ -68,6 +69,12 @@ public:
 	std::vector<float> pressures;
 	std::vector<float> old_pressures;
 
+	//Vector value textures - RGB correspond to XYZ
+	GLuint velocityInputTex, advectionOutputTex, diffusionOutputTex;
+
+	//Fire sim textures
+	GLuint fuelOutputTex, buoyancyOutputTex, temperatureTex;
+
 private:
 	Framebuffer *FBO;
 
@@ -83,18 +90,11 @@ private:
 	//FBO
 	GLuint writeFBO;
 
-	//Vector value textures - RGB correspond to XYZ
-	GLuint centroidsTex, velocityInputTex, advectionOutputTex, diffusionOutputTex;
-
-	//Fire sim textures
-	GLuint fuelOutputTex, buoyancyOutputTex, temperatureTex;
-	GLuint colorOutputTex;
-
 	//Scalar textures - RG correspond to divergence, pressure
 	GLuint divergenceOutputTex, pressureOutputTex;
 
 	//Buffer textures for extra R/W
-	GLuint bufferTex, buffer2Tex;
+	GLuint bufferTex, buffer2Tex, randomTex;
 };
 
 #endif

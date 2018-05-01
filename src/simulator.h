@@ -29,8 +29,14 @@ public:
 	/* Setup */
 	void init();
 
+	void toggleFlameColor();
+
+	void toggleTexture();
+
+	void toggleScene();
+
 	/* Run Simulation */
-	void simulate(float time);
+	void simulate(float time, vec2 mousepos, bool click);
 
 	void drawContents();
 	void render();
@@ -38,6 +44,7 @@ public:
 	/* Interaction */
 	void moveCamera(vec3 moveBy);
 	void rotateCamera(double deltaX, double deltaY);
+	void resetCamera();
 	void changeScrDimensions(int width, int height);
 
 	void bindScreenVertices();
@@ -65,12 +72,13 @@ private:
 	GLuint currentTex;
 
 	Camera *CAMERA;
-	Shader *renderShader, *cellShader;
+	Shader *renderShader, *renderShaderRay, *cellShader;
 	Grid *grid;
 	
 	float SCR_HEIGHT;
 	float SCR_WIDTH;
 	float resolution;
+	int fireColor;
 };
 
 #endif

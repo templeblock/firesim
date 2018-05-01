@@ -8,7 +8,7 @@
 using namespace glm;
 
 void Camera::init(double width, double height) {
-	camPos = vec3(0.f, 0.f, 2.f);
+	camPos = vec3(0.f, 0.f, 5.f);
 	camTarget = vec3(0.f, 0.f, 0.f);
 	changeScreenDimens(width, height);
 	calculateAxes();

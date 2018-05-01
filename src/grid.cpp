@@ -12,6 +12,7 @@ void Grid::init(int size, double timestep, double viscosity) {
 	viscosity = viscosity;
 	grid_size = size;
 	cell_size = 2.0 / (grid_size + 2.);
+	scene = 0;
 
 	/******************************/
 	/* GPU Process Initialization */
@@ -65,6 +66,12 @@ void Grid::buildTextures() {
 
 	bufferTex = FBO->create3DTexture(grid_size + 2, &fbo_vel[0]);
 	buffer2Tex = FBO->create3DTexture(grid_size + 2, &fbo_vel[0]);
+
+	fbo_vel = std::vector<float>(0);
+	for (int i = 0; i < (grid_size/3)*(grid_size/3)*(grid_size / 3) * 3; i++) {
+		fbo_vel.push_back(((rand() % 50) + 25.f) / 100.f);
+	}
+	randomTex = FBO->create3DTexture(grid_size / 3, &fbo_vel[0]);
 
 	writeFBO = FBO->create3DFBO(bufferTex);
 }
@@ -312,8 +319,8 @@ void Grid::extForces(float time) {
 	splatShader->setFloat("radius", 0.06f);
 	vec4 force = vec4(0.f, 0.f, 0.f, 0.f);
 	force.x = (rand() % 10) - 5;
-	force.y = (rand() % 5);
-	force.z = (rand() % 5);
+	force.y = (rand() % 3);
+	force.z = (rand() % 6) - 3;
 	force /= 10000.f;
 	force /= (int) (rand() % 100);
 	splatShader->setVec4("force", force);
@@ -336,7 +343,7 @@ void Grid::extForces(float time) {
 	}
 	//Buoyancy
 	buoyancyShader->use();
-	buoyancyShader->setFloat("speed", .2f);
+	buoyancyShader->setFloat("speed", .1f);
 	buoyancyShader->setFloat("ambient", 0.0f);
 	buoyancyShader->setFloat("cellSize", cell_size);
 	glActiveTexture(GL_TEXTURE0);
@@ -475,7 +482,7 @@ void Grid::projectGPU(int iterations) {
 	glBindTexture(GL_TEXTURE_3D, 0);
 }
 
-void Grid::moveDye(float time) {
+void Grid::moveDye(float time, vec4 mousePos, bool click) {
 	glBindVertexArray(VAO);
 	glBindFramebuffer(GL_FRAMEBUFFER, writeFBO);
 
@@ -493,11 +500,31 @@ void Grid::moveDye(float time) {
 	fillShader->use();
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_3D, bufferTex);
-	vec4 center = vec4(0.f, -0.75f, 0.f, 0.f);
-	fillShader->setVec4("center", center);
-	fillShader->setFloat("radius", 0.2f);
+	if (scene == 0) {
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_3D, randomTex);
+		fillShader->setInt("inTex", 0);
+		fillShader->setInt("inRand", 1);
+	}
+
+	if (click) {
+		vec4 center = vec4(0.f, -0.75f, 0.f, 0.f);
+		fillShader->setVec4("center", mousePos);
+		fillShader->setFloat("radius", .2f);
+	} else {
+		vec4 center = vec4(0.f, -0.6f, 0.f, 0.f);
+		fillShader->setVec4("center", center);
+		if (scene == 0) {
+			fillShader->setFloat("radius", 0.0f);
+		} else {
+			fillShader->setFloat("radius", 0.25f);
+		}
+	}
+
 	fillShader->setFloat("cellSize", cell_size);
 	for (int i = 0; i < grid_size + 2; i++) {
+		float row = (rand() % 100) / 100.f;
+		fillShader->setFloat("texRow", row);
 		fillShader->setFloat("slice", i);
 		FBO->switchLayer(fuelOutputTex, i);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -517,7 +544,7 @@ void Grid::moveDye(float time) {
 	/* Consume Fuel */
 	fuelShader->use();
 	fuelShader->setFloat("timeStep", timeStep);
-	fuelShader->setFloat("rate", 0.15f);
+	fuelShader->setFloat("rate", 0.2f);
 	fuelShader->setFloat("cellSize", cell_size);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_3D, bufferTex);
