@@ -24,6 +24,10 @@
     <div class="content">
       <h1>Final Report</h1>
       <h2>Real-Time Fire Simulation</h2>
+        <p>In our project we simulate real-time fire using a grid-based approach and fluid dynamics. We use the incompressible Navier-Stokes equations, which are broken down into 4 main components: advection, pressure, diffusion, and external forces, to model the mechanics of the fluid. In order to visualize and successively test each of these components, initally we set up a 2D grid representing the fluid velocity field. To represent the fire, we added a fuel source that would be continuously generated in a circle at the bottom of the grid, with fuel depletion controlled by a reaction coordinate. Once we verified our calculations worked, we moved these computations from the CPU to the GPU and switched out our 2D texture for a 3D one. Next, we sampled images of real fire to obtain equations representing how the red, green, and blue color values varied with temperature. As a last step, we ray-trace through the 3D texture, accumulating temperature values along each ray, and use those quantities to calculate color. At a low performance cost, this allowed us to acheive relatively realistic looking fire effects in real-time.</p>
+      <h2>Technical Approach</h2>
+      <h2>References</h2>
+      <h2>Contributions</h2>
     </div>
 </div>
 </body>
