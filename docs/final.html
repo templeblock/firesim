@@ -23,32 +23,25 @@
     </div>
     <div class="content">
       <h1>Final Report</h1>
-      <h2>Real-Time Fire Simulation</h2>
-        <p>In our project we simulate real-time fire using a grid-based approach and fluid dynamics. We use the incompressible Navier-Stokes equations, which are broken down into 4 main components: advection, diffusion, external forces, and projection, to model the mechanics of the fluid. In order to visualize and successively test each of these components, initally we set up a 2D grid representing the fluid velocity field. To represent the fire, we added a fuel source which would be continuously generated in a circle at the bottom of the grid, with fuel depletion controlled by a reaction coordinate. Once we verified our calculations worked, we moved these computations from the CPU to the GPU and switched out our 2D textures for 3D ones. Next, we sampled images of real fire to obtain equations representing how the red, green, and blue color values varied with temperature. As a last step, we ray-trace through the 3D texture, accumulating temperature values along each ray, and use those quantities to calculate color. At a low performance cost, this allowed us to acheive relatively realistic looking fire effects in real-time.</p>
+      <br><br>
+      <div align="center">
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/m2yhz6cM_1E" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      </div>
+
+      <h2>Abstract</h2>
+        <p>Our project simulates real-time, 3D fire by using a grid-based discretization of fluid dynamics using the Navier-Stokes equations for incompressible flow. To represent the fire, we added a fuel source which would be continuously generated in a circle at the bottom of the grid, with fuel depletion controlled by a reaction coordinate. Once we verified our calculations worked, we moved these computations from the CPU to the GPU and switched out our 2D textures for 3D ones. Next, we sampled images of real fire to obtain equations representing how the red, green, and blue color values varied with temperature. As a last step, we ray-trace through the 3D texture, accumulating temperature values along each ray, and use those quantities to calculate color. At a low performance cost, this allowed us to acheive relatively realistic looking fire effects in real-time.</p>
       <h2>Technical Approach</h2>
       	<h3>Set-Up</h3>
-        <p>Our first step was setting up GLFW to use with the OpenGL library, which we referenced from this source, <a href="https://learnopengl.com/">LearnOpenGL</a>, for. The source also suggested using GLAD to manage the cumbersome work of loading the relevant OpenGL functions, which can vary depending on the OpenGL version used. We tested if our setup worked by opening an application window and getting a triangle to render to the screen. After this worked, we implemented basic camera controls that allowed the user to zoom in and out; the previously mentioned source had individual sections for each of these actions.</p>
+        <p>We set up the base application by importing GLFW to use with the OpenGL library to manage I/O functions and GLAD to manage the cumbersome work of loading the relevant OpenGL functions, which can vary depending on the OpenGL version used. We also implemented basic camera controls that allowed the user to zoom in and out and tested if our setup worked by opening an application window and getting a triangle to render to the screen. (<a href="https://learnopengl.com/">LearnOpenGL</a>)</p>
 
-        <h3>Working Fluid Sim in 2D</h3>
-        <p>We referenced the <a href="https://developer.download.nvidia.com/books/HTML/gpugems/gpugems_ch38.html">GPU Gems 2D Fluid Sim</a> to gain a better understanding of the physics behind fluid simulation. For our fluid, as well as the one introduced in the source, we assume an incompressible, homogeneous fluid, which we begin by representing as a 2D grid. In the code itself, we store a velocity and scalar pressure field. For each cell in the grid, we solve the Navier-Stokes equations, which can be broken down into advection, diffusion, external forces, and projection components. As we apply each component to our fluid, we visualize and test it, by first giving each cell in the grid an arrow representing the velocity at that point, and then later by adding a passive dye scalar which would be passively advected alongside the velocity. </p>
-        <br>
-        <div align="center">
-      	<img src = "images/dying4-advectiononly.gif" width = "50%">
-      	<figcaption>Arrow Representation of Advection Function.</figcaption>
-      	</div>
-      	<br>
-      	
-        <p>After testing for advection in this way, we applied diffusion to our fluid's velocity field, yielding a field with non-zero divergence. We must correct for this using the Helmholtz-Hodge Decomposition Theorem, in which we subtract the gradient of the fluid's pressure to obtain a field with divergence-free velocity. To do this requires the following steps, which make up the projection component of our Navier-Stokes equation:
-        </p>
-        <ul>
-          <li>First we obtain a Poisson-pressure equation by applying divergence on our velocity field from earlier</li>
-          <li>We can solve for the fluid's pressure in this equation using Jacobian iteration</li>
-          <li>Finally, we can apply the gradient and subtract from our earlier velocity field to obtain a field with zero divergence</li>
-        </ul>
+        <h3>Fluid Sim in 2D</h3>
+        <p>We first modeled our simulation as an incompressible, homogeneous fluid discretized into a 2D grid. For each cell in the grid, the program tracks terms such as velocity and pressure by solving the Navier-Stokes equations, which can be broken down into the processes of advection, diffusion, external forces, and projection (<a href="https://developer.download.nvidia.com/books/HTML/gpugems/gpugems_ch38.html">Harris</a>). Applying advection, diffusion, and external forces can yield a fluid with non-zero divergence, which must be corrected for using the projection step, derived from the Helmholtz-Hodge Decomposition Theorem, which subtracts the gradient of the fluid's pressure to obtain a field with divergence-free velocity. Both diffusion and pressure in this implementation are solved for using Jacobi iteration, which we can afford to run less iterations for because fire does not require as much precision to model convincingly as liquids like water.</p>
 
+        <p>As each process is performed on the fluid, we visualized and tested them, first with arrows to indicated the velocity direction of that cell, and later by adding a passive dye scalar which is advected alongside the velocity.</p>
         <table class="staticimg">
         <caption></caption>
         <tr>
+            <td><img src = "images/dying4-advectiononly.gif" width = "50%"><figcaption>Arrow Representation of Advection Function.</figcaption></td>
             <td><img src="images/dying4-vel_texture.gif"><figcaption>Velocity texture over time, with RG corresponding to XY (normalized for visual clarity)</figcaption></td>
             <td><img src="images/dying4-varyingdyecolor.gif"><figcaption>Dye advecting out from center (Color is a function of time)</figcaption></td>
         </tr>
@@ -56,9 +49,11 @@
 
     	<h3>GPU Implementation</h3>
 
-        <p>After completing the Navier-Stokes fluid solver with CPU functions and verifying that we understood the mechanics of it, we began moving the implementation into GPU. We began by adding textures to store velocity, pressure, and divergence. Each step of the fluid solver was written as a separate GLSL frag shader and drawn into a framebuffer to perform the calculation. As a result, our program performance increased significantly; we were also able to increase the resolution of our 2D grid. While the CPU solver was only able to simulate up to a 100x100 grid without noticeable lag, the GPU solver could handle grid sizes of over 1500x1500.</p>
+        <p>After completing and testing the Navier-Stokes fluid solver on CPU, we began moving the implementation into GPU to increase performance. We stuck with OpenGL because we already had the libraries for it, it was more stable, and it would allow our program to be cross-platform rather than limited to Nvidia graphics cards.</p> 
 
-        <p>As a next step, we replace the dye with a texture representing the fuel quantity of the flame; this is also called the reaction coordinate, and the equation representing how this quantity changes, with respect to the fluid's velocity field, is referenced from <a href="https://physbam.stanford.edu/~fedkiw/papers/stanford2002-02.pdf">Nguyen's paper</a> on physically based simulation of fire. This equation can be solved using the semi-Lagrangian stable fluids method described above. To simulate the fuel being "consumed" by the combustion reaction, we decrease it linearly at every cell. Near the bottom of the grid, we place a fuel "source" (a circle at the base of the flame) which is continuously refilled at every time step.</p>
+        <p>Variables such as velocity, pressure, and divergence were stored as 2D textures, and each step of the fluid solver was written as a separate GLSL frag shader and drawn into a framebuffer to perform the calculation. As a result, our program's performance increased significantly: while the CPU solver was only able to simulate up to a 100x100 grid without noticeable lag, the GPU solver could handle grid sizes of over 1500x1500.</p>
+
+        <p>We replaced the dye with a texture representing the fuel quantity of the flame, which represents the reaction coordinate. To simulate the fuel being "consumed" by the combustion reaction, we decrease it linearly at every cell. We also "refill" the fuel's "source" (a circle at the base of the flame) at every time step for demo purposes, but this implementation could easily be modified to model the consumption of a limited fuel source over time.</p>
 
         <br>
         <div align="center">
@@ -67,31 +62,19 @@
       	</div>
       	<br>
 
-        <p>To increase the realism of our fire, we also began changing our current advection scheme to the MacCormack advection scheme described in the <a href="https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch30.html">GPU Gems 3D Fluid Sim</a> article. The current advection scheme we were using was unconditionally stable, but introduced unwanted numerical smoothing, causing the generated flame to look unnaturally smooth. In addition, we referenced the "Force Application" section of the <a href="https://developer.download.nvidia.com/books/HTML/gpugems/gpugems_ch38.html">GPU Gems 2D Fluid Sim</a> article to apply a random Gaussian splat to our flame, as well as added random bits of wind, to acheive a more realistic fire effect from random external forces.</p>
+        <p>To increase the realism of our fire, we also switched our implicit Stam advection scheme to the MacCormack advection scheme in order to increase the detail of the simulation without having to increase resolution (<a href="https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch30.html">Crane</a>). We also applied a pseudo-randomized Gaussian splat to our flame to achieve a more realistic fire effect from random external forces.</p>
 
         <table class="staticimg">
         <caption></caption>
         <tr>
-            <td><img src="images/dying4-fuel_stam.gif"></td>
-            <td><img src="images/dying4-fuel_maccorm.gif"></td>
-        </tr>
-        <tr>
-        	<td><figcaption>Fuel distribution for original stam advection scheme.</figcaption></td>
-        	<td><figcaption>Fuel distribution for MacCormack advection scheme</figcaption></td>
-        </tr>
-        <tr>
-            <td><img src="images/dying4-velocity_stam.gif"></td>
-            <td><img src="images/dying4-velocity_maccormack.gif"></td>
-        </tr>
-        <tr>
-        	<td><figcaption>Velocity field for original stam advection scheme.</figcaption></td>
-        	<td><figcaption>Velocity field for improved MacCormack advection scheme with less smoothing.</figcaption></td>
+            <td><img src="images/dying4-velocity_stam.gif"><figcaption>Velocity field for original stam advection scheme</figcaption></td>
+            <td><img src="images/dying4-velocity_maccormack.gif"><figcaption>Velocity field for improved MacCormack advection scheme with less smoothing</figcaption></td>
         </tr>
     	</table>
 
-      	<h3>Conversion from 3D to 2D</h3>
+      	<h3>Conversion from 2D to 3D</h3>
 
-        <p>At this point, we began referencing the <a href="https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch30.html">GPU Gems 3D Fluid Sim</a> article to translate our 2D fluid computations to 3D. This involved adding an extra z-coordinate and tweaking our calculations in the GLSL frag shaders slightly to account for the extra dimension. Each shader, however, only operates on a single "slice", or 2D cross-section, of our 3D texture at a time. To generate a flame in 3D, we divide up our 3D texture into <code>grid_size + 2</code> slices and iterate over each slice, performing the fluid computations for that particular slice in the GLSL shaders.</p>
+        <p>At this point, we began translating our 2D fluid computations to 3D. This involved adding an extra z-coordinate and tweaking our calculations in the GLSL frag shaders slightly to account for the extra dimension. Because of the limitations of framebuffer drawing, each shader can only operate on a single "slice", or a 2D cross-section, of our 3D texture at a time, so we iterate over each slice until the entire texture has been drawn.</p>
 
         <table class="staticimg">
         <caption></caption>
@@ -100,23 +83,23 @@
             <td><img src="images/dying4-3Dboxvelocity.gif"></td>
         </tr>
         <tr>
-        	<td><figcaption>The fire in 3D. This is before temperature accumulation was implemented, so the results are still similar to 2D.</figcaption></td>
-        	<td><figcaption>We can observe the 3D effect more accurately by looking at this visual representation of the velocity within the 3D texture.</figcaption></td>
+        	<td><figcaption>Fuel amount in 3D</figcaption></td>
+        	<td><figcaption>Visual representation of velocity in 3D</figcaption></td>
         </tr>
     	</table>
 
 
         <h3>Raytracing</h3>
-        <p>Having moved our implementation to 3D, we can now raytrace to estimate radiance. The rays accumulate temperatures throughout the 3D grid through a method inspired by the radiative transport equation, referenced from <a href="https://physbam.stanford.edu/~fedkiw/papers/stanford2002-02.pdf">Nguyen's paper</a>. The radiative transport equation integrates the overall spectral radiance over the ray. Nyugen's approach implemented this by recursively breaking up the ray into small segments and measuring the radiance from each. </p>
+        <p>In order to render the 3D textures, we raytraced through the 3D temperature texture to estimate the radiance at each pixel (<a href="http://physbam.stanford.edu/~fedkiw/papers/stanford2002-02.pdf">Nguyen et al</a>). Since our model strives to merely mimic the appearance of fire rather than simulate realistic physics, we used a simplified version of Nguyen's approach. We chose to measure temperature values, where each ray would accumulate the total temperature over the slices of the 3D texture that it intersected. We also skipped the radiance step of the equation, as our color conversions did not need an accurate radiance estimate.</p>
 
-        <p>Since our model strives to merely mimic the appearance of fire rather than simulate realistic physics, we used a simplified version of this approach. We chose to measure temperature values, where each ray would accumulate the total temperature over the slices of the 3D texture that it intersected. We chose to skip the radiance step of the equation, as our color conversions did not need an accurate radiance estimate.</p>
+        <p>To implement raytracing, we first created a new 2D texture that represents the viewing plane and calculated each ray as originating from the camera and intersecting with its respective grid position. Unlike rendering programs that perform intensive calculations to output an accurate but still image, our raycasting function had to operate in real time, so we simplified and parallelized the process by writing a GLSL frag shader that would handle the ray at each point of the grid in a single pass. Because texture coordinates are always fixed from 0 to 1, the rotating effect was simulated by rotating the camera and viewing plane instead of the texture, allowing for an easier conversion from world space to texture space at the tangent point.</p>
 
         <h3>Temperature to Color Conversion</h3>
         <p>We observed many images of fire for this project to reference our desired look and color. In particular, we referenced candles, as those flames were often more controlled and matched the shape of our small ball of flame. We noticed that the colors for these fires often smoothly transitioned based off of distance from the fuel source, and we came up with the idea to calculate red, green, and blue as polynomial equations that took in a scaled temperature value. Hotter temperature areas would be lighter, occasionally bluer, while cooler parts of the flame would be more red in appearance.</p>
 
         <p>We studied multiple image references of candles and recorded the colors we observed. To calculate our equations, we took over 150 hexidecimal color samples and stored them in an Excel spreadsheet that plotted the red, green, and blue values of the colors separately. We coded the Excel spreadsheet to calculate three line of fit equations based off of our results for each color channel, and modified our color shader to output the final color based off the polynomials we found.</p>
 
-        <p>Early color results were slightly off, and our results were slightly off color. We manipulated the data to account for white cutoff, and continued to tweak our equations and take addtional samples until we got a flame that matched our desired look. We also tried out different color equation combinations, to get interesting results.</p>
+        <p>Early color results were slightly off color. We manipulated the data to account for white cutoff, and continued to tweak our equations and take addtional samples until we got a flame that matched our desired look. We also tried out different color equation combinations to get interesting results.</p>
 
         <table class="staticimg">
         <caption></caption>
@@ -135,17 +118,16 @@
         
        	<h3>Problems Encountered</h3>
 
-       	<p>Since none of us were familiar with the physics of fire simulation prior to this project, we experienced some setbacks trying to understand and implement some of the equations in the paper. For example we originally tried to compute color by measuring radiance and converting it to color using Planck's equation, however, the documentation that we could find on how it was meant to be implemented was sparse. Ultimately, a lot of our problems were mitigated by good team work and frequent communication. To keep everyone on track, we held frequent meetings and worked together to research and teach each other what we understood. When one person was lost, another person would step in to help. When we were collectively stuck, we would discuss alternative approaches we could take that we could implement instead.</p>
+        <p>Setting up the project to be cross-platform and easily compilable was a major first hurdle, which required several hours of CMake tweaking. We also spent a lot of time looking through OpenGL documentation to find the best ways to implement our ideas as well as learning the features and limitations of OpenGL. Since both the simulation step and the rendering step of our program require GPU reads and writes, the process was difficult to abstract away without introducing unexpected bugs and required careful coordination of GPU-related functions across classes.</p>
+
+       	<p>Since none of us were familiar with the physics of fire simulation prior to this project, we experienced some setbacks trying to understand and implement some of the equations in the paper. For example, we originally tried to compute color by measuring radiance and converting it to color using Planck's equation, but the documentation that we could find on how it was meant to be implemented was sparse. We were able to improve our overall comprehension through good team work and frequent communication, and we held frequent meetings and worked together to research and teach each other what we understood. When we were collectively stuck, we would discuss alternative approaches we could take that we could implement instead.</p>
 
        	<h3>Lessons Learned</h3>
        	<p>This project was a challenging learning experience for all of us, and helped us better understand fluid sim, GPU parallelization, and fire physics. We learned how to optimize our graphics program to run in real time and make use of shaders and textures to achieve the results we want. The scope of the project made it crucial that all team members were on the same page, and it stressed the need to help each other so that nobody would be left behind. Ultimately it was a difficult, but rewarding experience.</p>
+
       <h2>Results</h2>
-      	<p>Here is the final video for our project:</p>
-        <br>
-        <div align="center">
-      	<iframe width="560" height="315" src="https://www.youtube.com/embed/m2yhz6cM_1E" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-      	</div>
-      	<br>
+
+        <p>Our final program is a 3D fire simulation that can run in real time without noticeable lag. On an Nvidia GEForce GTX 960, it can easily handle a 3D grid resolution of 100 x 100 x 100. For demo purposes, we also added click-and-drag fuel generation and camera rotation as well as the ability to toggle the color of the flame. We set up two scenes, one which generates a ball of fire, and one which feeds random amounts of fuel to the base of the simulation space.</p>
 
         <table class="staticimg">
         <caption></caption>
@@ -155,9 +137,9 @@
             <td><img src="images/dying4-flameoncursor.gif"></td>
         </tr>
         <tr>
-        	<td><figcaption>Fire on an implicit surface with randomly seeded fuel values.</figcaption></td>
-        	<td><figcaption>Showcase of different color effects.</figcaption></td>
-        	<td><figcaption>Interaction with the cursor.</figcaption></td>
+        	<td><figcaption>Fire with randomly seeded fuel values</figcaption></td>
+        	<td><figcaption>Different color effects</figcaption></td>
+        	<td><figcaption>Interaction with the cursor</figcaption></td>
         </tr>
     	</table>
       	
@@ -165,58 +147,46 @@
       <h2>References</h2>
       <ul>
           <li><a href="https://learnopengl.com/">LearnOpenGL</a></li>
-          <li><a href="https://developer.download.nvidia.com/books/HTML/gpugems/gpugems_ch38.html">GPU Gems 2D Fluid Sim</a></li>
-          <li><a href="https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch30.html">GPU Gems 3D Fluid Sim</a></li>
-          <li><a href="https://physbam.stanford.edu/~fedkiw/papers/stanford2002-02.pdf">Physically Based Modeling and Animation of Fire</a></li>
+          <li><a href="https://developer.download.nvidia.com/books/HTML/gpugems/gpugems_ch38.html">GPU Gems 2D Fluid Sim</a> by Mark J. Harris</li>
+          <li><a href="https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch30.html">GPU Gems 3D Fluid Sim</a> by Keenan Crane</li>
+          <li><a href="https://physbam.stanford.edu/~fedkiw/papers/stanford2002-02.pdf">Physically Based Modeling and Animation of Fire</a> by Nguyen et al</li>
       </ul>
-      <h2>Contributions</h2>
 
+      <h2>Contributions</h2>
       <h3>Gracie Li</h3>
       <ul>
 		<li> Research</li>
-		<li> Coded Velocity and acceleration for initial CPU grid structure</li>
-		<li> Advection implementation</li>
-		<li> Pressure implementation</li>
-		<li> Projection implementation</li>
-		<li> Moved diffuse, divergence to GLSL</li>
-		<li> Moved gradient subtraction, and pressure to GLSL</li>
-		<li> Implemented dye in GLSL</li>
-		<li> Worked on MacCormack</li>
-		<li> Reference sampling</li>
-		<li> Converted shaders to 3D</li>
+		<li> Stam advection, pressure, and projection in CPU implementation</li>
+		<li> Diffusion, divergence, gradient subtraction, and pressure in CPU</li>
+    <li> Converting projection shaders to GLSL</li>
+		<li> MacCormack advection</li>
+    <li> Adding 3rd dimension to shaders</li>
+		<li> Reference sampling for colors</li>
+    <li> Final write-up</li>
       </ul>
 
        <h3>Yuan Zhou</h3>
       <ul>
- Research</li>
-		<li> Coded grid structure and vector field representation for initial CPU grid structure</li>
-		<li> Divergence implementation</li>
-		<li> Gradient subtraction implementation</li>
-		<li> Projection implementation</li>
-		<li> Worked on MacCormack</li>
-		<li> Converted shaders to 3D</li>
-		<li> Programmed radiance to RGB shader</li>
-		<li> Reference sampling</li>
-		<li> Color equation tuning</li>
+    <li> Research</li>
+		<li> Grid initialization and velocity field structure for CPU simulation</li>
+		<li> Divergence, gradient subtraction, and projection in GPU and GLSL</li>
+		<li> MacCormack advection</li>
+		<li> Adding 3rd dimension to shaders</li>
 		<li> Programmed Excel spreadsheet to calculate color polynomials</li>
+    <li> Reference sampling and color equation tuning, radiance to RGB shader</li>
+    <li> Final write-up</li>
       </ul>
 
       <h3>Chris Zhang</h3>
       <ul>
-		<li> Research</li>
-		<li> Integrated code and programmed visual representation for initial CPU structure</li>
-		<li> Camera zoom and rotation</li>
-		<li> Scene Toggle</li>
-		<li> Set up code framework to transfer textures from CPU to GPU</li>
-		<li> Setup and configured GLFW to use with the Open GL library</li>
-		<li> Advection implementation</li>
-		<li> Diffusion implementation</li>
-		<li> Moved advection and diffuse to GLSL</li>
-		<li> Converted textures to 3D and set up framework for 3D</li>
-		<li> Alpha blending</li>
-		<li> Color equation tuning</li>
-		<li> Coded visual representations for velocity, bouyancy, and fuel fields</li>
-		<li> Implemented raytracing</li>
+		<li> Research, troubleshooting/debugging and integration for all steps</li>
+    <li> Setup and configuring CMake, GLFW, GLAD, and application window</li>
+    <li> I/O handling: camera zoom and rotation, scene/color toggle, etc.</li>
+    <li> Advection and diffusion in CPU and GLSL</li>
+    <li> Visual representations for velocity, pressure, fuel, etc. in CPU and GPU</li>
+    <li> Constructors for GPU textures, framebuffers, vertex arrays, shaders, etc.</li>
+    <li> GPU pipeline & 3D texture slicing</li>
+    <li> Rendering, raytracing, color equation tuning</li>
 		<li> Video editing and screencapping</li>
       </ul>
     </div>
