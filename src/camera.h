@@ -1,48 +1,50 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include <iostream>
 #include <glm/glm.hpp>
+#include <iostream>
+
 using namespace glm;
 
 class Camera {
 public:
+    Camera() {}
 
-	Camera() {}
-	void init(double width, double height);
+    void init(double width, double height);
 
-	void changeScreenDimens(double width, double height);
+    void changeScreenDimens(double width, double height);
 
-	/*****************************************/
-	/* Position, Orientation, Movement, etc. */
-	/*****************************************/
-	//Screen Dimensions
-	double SCR_WIDTH, SCR_HEIGHT;
+    /*****************************************/
+    /* Position, Orientation, Movement, etc. */
+    /*****************************************/
+    //Screen Dimensions
+    double SCR_WIDTH, SCR_HEIGHT;
 
-	//Cam position and cam target position
-	vec3 camPos, camTarget;
+    //Cam position and cam target position
+    vec3 camPos, camTarget;
 
-	//Axes of camera coordinate system
-	vec3 TargetToCam, camRight, camUp;
+    //Axes of camera coordinate system
+    vec3 TargetToCam, camRight, camUp;
 
-	//View Matrix
-	mat4 w2c;
+    //View Matrix
+    mat4 w2c;
 
-	void calculateAxes();
-	mat4 getViewMatrix();
+    void calculateAxes();
 
-	void move(vec3 moveBy);
+    mat4 getViewMatrix();
 
-	void rotateBy(double deltaX, double deltaY);
+    void move(vec3 moveBy);
 
-	/*****************/
-	/* Viewing Plane */
-	/*****************/
+    void rotateBy(double deltaX, double deltaY);
 
-	//camera space to world space func
-	//generate ray func
+    /*****************/
+    /* Viewing Plane */
+    /*****************/
+
+    //camera space to world space func
+    //generate ray func
 
 private:
-
 };
+
 #endif
